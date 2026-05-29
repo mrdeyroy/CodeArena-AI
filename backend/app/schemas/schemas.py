@@ -29,6 +29,8 @@ class Language(str, Enum):
     PYTHON = "python"
     CPP = "cpp"
     JAVA = "java"
+    C = "c"
+    JAVASCRIPT = "javascript"
 
 
 class InterviewType(str, Enum):
@@ -54,6 +56,7 @@ class SkillNode(BaseModel):
     name: str
     description: str
     category: str
+    problem_count: int = 0
 
 
 class SkillEdge(BaseModel):

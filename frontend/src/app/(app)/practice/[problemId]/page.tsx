@@ -104,8 +104,9 @@ export default function CodingWorkspacePage() {
       try {
         const p = await fetchProblemBySlug(problemSlug);
         setProblem(p);
-        // Load starter code
-        setEditorCode(p.starterCode[selectedLanguage] || p.starterCode['python'] || '');
+        // Load draft code from localStorage if available, else default template
+        const savedCode = typeof window !== 'undefined' ? localStorage.getItem(`codearena_code_${problemSlug}_${selectedLanguage}`) : null;
+        setEditorCode(savedCode || p.starterCode[selectedLanguage] || p.starterCode['python'] || '');
         // Initial assistant message
         setAiMentorMessages([
           { role: 'assistant', text: `Hi, I am your dedicated Coding Mentor. I have full context on "${p.title}". Let me know if you need help with optimization steps, dry runs, or line-by-line debugging.` }
@@ -123,10 +124,19 @@ export default function CodingWorkspacePage() {
 
   // Sync starter code when language switches
   React.useEffect(() => {
-    if (problem && problem.starterCode[selectedLanguage]) {
-      setEditorCode(problem.starterCode[selectedLanguage]);
+    if (problem) {
+      const savedCode = typeof window !== 'undefined' ? localStorage.getItem(`codearena_code_${problemSlug}_${selectedLanguage}`) : null;
+      setEditorCode(savedCode || problem.starterCode[selectedLanguage] || '');
     }
   }, [selectedLanguage, problem]);
+
+  const handleEditorChange = (value: string | undefined) => {
+    const val = value || '';
+    setEditorCode(val);
+    if (problem && typeof window !== 'undefined') {
+      localStorage.setItem(`codearena_code_${problemSlug}_${selectedLanguage}`, val);
+    }
+  };
 
   // Timer counter
   React.useEffect(() => {
@@ -485,6 +495,8 @@ export default function CodingWorkspacePage() {
                 <option value="python">Python 3</option>
                 <option value="javascript">JavaScript (Node)</option>
                 <option value="cpp">C++ (g++)</option>
+                <option value="c">C (gcc)</option>
+                <option value="java">Java (OpenJDK)</option>
               </select>
               
               <button 
@@ -528,7 +540,7 @@ export default function CodingWorkspacePage() {
               language={selectedLanguage === 'cpp' ? 'cpp' : selectedLanguage === 'python' ? 'python' : 'javascript'}
               theme="vs-dark"
               value={editorCode}
-              onChange={(val) => setEditorCode(val || '')}
+              onChange={handleEditorChange}
               options={{
                 fontSize: 12.5,
                 minimap: { enabled: false },

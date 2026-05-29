@@ -1,7 +1,18 @@
 import { supabase } from './supabase';
 import { Problem, ProblemStatus, Difficulty, SkillNode, SkillEdge } from './types';
 
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+let BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+
+// Dynamic host resolution on client-side to prevent strict localhost/127.0.0.1 cross-origin blocking
+if (typeof window !== 'undefined') {
+  const hostname = window.location.hostname;
+  if (hostname === '127.0.0.1') {
+    BASE_URL = BASE_URL.replace('localhost', '127.0.0.1');
+  } else if (hostname === 'localhost') {
+    BASE_URL = BASE_URL.replace('127.0.0.1', 'localhost');
+  }
+}
+
 const DEFAULT_USER_ID = '00000000-0000-0000-0000-000000000000';
 
 async function getCurrentUserId(): Promise<string> {
@@ -116,7 +127,6 @@ export async function fetchGraph(): Promise<{ nodes: SkillNode[]; edges: SkillEd
   if (!res.ok) throw new Error('Failed to fetch skill graph');
   const data = await res.json();
 
-  // Load analytics to fill mastery/status dynamically
   let skillsAnalytics: any[] = [];
   try {
     const userId = await getCurrentUserId();
@@ -131,32 +141,17 @@ export async function fetchGraph(): Promise<{ nodes: SkillNode[]; edges: SkillEd
     console.error('Failed to load skill analytics:', e);
   }
 
-  // Load all problems to calculate count dynamically
-  let allProblems: Problem[] = [];
-  try {
-    allProblems = await fetchProblems();
-  } catch (e) {
-    console.error('Failed to fetch problems for graph aggregation:', e);
-  }
-
   const nodes = (data.nodes || []).map((node: any) => {
     const analytics = skillsAnalytics.find((sa) => sa.skill_name === node.name) || {};
     const masteryVal = analytics.mastery !== undefined ? Math.round(analytics.mastery * 100) : 0;
-    
+
     let statusVal: 'mastered' | 'learning' | 'weak' | 'locked' = 'locked';
     if (masteryVal >= 80) statusVal = 'mastered';
     else if (masteryVal >= 50) statusVal = 'learning';
     else if (masteryVal > 0) statusVal = 'weak';
 
-    // Map problems to this node
-    const nodeProblems = allProblems.filter((p) =>
-      p.topics.some((topic) =>
-        topic.toLowerCase().includes(node.name.toLowerCase()) ||
-        node.name.toLowerCase().includes(topic.toLowerCase())
-      )
-    );
-    const problemsCount = nodeProblems.length || 10;
-    const solvedProblems = nodeProblems.filter((p) => p.status === 'Solved').length;
+    const problemsCount = node.problem_count || 10;
+    const solvedProblems = masteryVal >= 80 ? Math.round(problemsCount * 0.8) : (masteryVal >= 50 ? Math.round(problemsCount * 0.4) : 0);
 
     return {
       id: node.id,
@@ -164,7 +159,7 @@ export async function fetchGraph(): Promise<{ nodes: SkillNode[]; edges: SkillEd
       status: statusVal,
       mastery: masteryVal,
       problemsCount,
-      problemsSolved: solvedProblems || (masteryVal >= 80 ? Math.round(problemsCount * 0.8) : (masteryVal >= 50 ? Math.round(problemsCount * 0.4) : 0)),
+      problemsSolved: solvedProblems,
       lastActivity: new Date().toISOString(),
       description: node.description || '',
       recommendedProblems: [],

@@ -18,14 +18,15 @@ import {
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { useUserStore } from '@/store/user-store';
 import { Difficulty, Problem } from '@/lib/types';
+import { useProblems } from '@/lib/hooks/use-problems';
 
 function PracticeExplorer() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const searchParamQuery = searchParams ? searchParams.get('search') : null;
-  const { problems } = useUserStore();
+
+  const { data: problems = [], isLoading } = useProblems();
 
   // Filter States
   const [searchQuery, setSearchQuery] = React.useState(searchParamQuery || '');
@@ -40,6 +41,15 @@ function PracticeExplorer() {
       setSearchQuery(searchParamQuery);
     }
   }, [searchParamQuery]);
+
+  if (isLoading) {
+    return (
+      <div className="flex flex-col items-center justify-center py-24 gap-3 text-slate-500 max-w-7xl mx-auto">
+        <div className="animate-spin rounded-full h-6 w-6 border-t-2 border-b-2 border-indigo-500" />
+        <span className="text-[10px] font-bold uppercase tracking-wider text-indigo-450">Loading Practice Explorer...</span>
+      </div>
+    );
+  }
 
   // Derived unique filters
   const allTopics = Array.from(new Set(problems.flatMap(p => p.topics)));

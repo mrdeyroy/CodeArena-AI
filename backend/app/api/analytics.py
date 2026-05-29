@@ -1,26 +1,39 @@
 from fastapi import APIRouter, Depends, Query
 
 from app.db.supabase import get_supabase
-from app.db.operations import fetch_skill_states
+from app.db.operations import fetch_skill_states, fetch_user_problem_statuses
 
 router = APIRouter(prefix="/analytics", tags=["analytics"])
 
 
 @router.get("/overview")
 async def get_overview(user_id: str = Query(...), supabase=Depends(get_supabase)):
-    subs_resp = supabase.from_("submissions").select("id, status").eq("user_id", user_id).execute()
-    submissions = subs_resp.data or []
-    total_submissions = len(submissions)
-    accepted = sum(1 for s in submissions if s["status"] == "accepted")
-    total_solved = len({s.get("problem_id") for s in submissions if s["status"] == "accepted"})
+    from fastapi.concurrency import run_in_threadpool
+    import asyncio
 
-    telemetry_resp = supabase.from_("telemetry_events").select("created_at").eq("user_id", user_id).execute()
-    days = {e["created_at"][:10] for e in (telemetry_resp.data or []) if e.get("created_at")}
+    def fetch_counts():
+        status_map = fetch_user_problem_statuses(user_id)
+        total_solved = sum(1 for v in status_map.values() if v == "solved")
+        total_attempted = sum(1 for v in status_map.values() if v == "attempted")
+        return total_solved, total_attempted
 
-    acceptance_rate = round(accepted / total_submissions * 100, 1) if total_submissions > 0 else 0.0
+    def fetch_telemetry_dates():
+        resp = supabase.from_("telemetry_events").select("id, created_at").eq("user_id", user_id).execute()
+        dates = {e["created_at"][:10] for e in (resp.data or []) if e.get("created_at")}
+        return dates
+
+    counts_task = run_in_threadpool(fetch_counts)
+    telemetry_task = run_in_threadpool(fetch_telemetry_dates)
+    states_task = run_in_threadpool(fetch_skill_states, user_id)
+
+    (total_solved, total_attempted), days, skill_states = await asyncio.gather(
+        counts_task, telemetry_task, states_task
+    )
+
+    total_submissions = total_solved + total_attempted
+    acceptance_rate = round(total_solved / total_submissions * 100, 1) if total_submissions > 0 else 0.0
+
     overall_readiness = 40.0
-
-    skill_states = fetch_skill_states(user_id)
     if skill_states:
         overall_readiness = round(sum(s["mastery"] for s in skill_states) / len(skill_states) * 100, 1)
 

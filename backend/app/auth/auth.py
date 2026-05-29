@@ -47,6 +47,9 @@ async def _verify_token(token: str, supabase: Client) -> dict:
         )
 
 
+_user_cache: dict[str, dict] = {}
+
+
 async def get_or_create_db_user(
     supabase_id: str,
     email: str,
@@ -54,10 +57,15 @@ async def get_or_create_db_user(
     supabase: Client,
 ) -> dict:
     """Resolve Supabase Auth User UUID to a row in public.users, creating it if missing."""
+    global _user_cache
+    if supabase_id in _user_cache:
+        return _user_cache[supabase_id]
+
     # 1. Fetch user by public.users.id (if UUIDs are aligned)
     try:
         resp = supabase.from_("users").select("*").eq("id", supabase_id).maybe_single().execute()
         if resp.data:
+            _user_cache[supabase_id] = resp.data
             return resp.data
     except Exception:
         pass
@@ -72,6 +80,7 @@ async def get_or_create_db_user(
             .execute()
         )
         if resp.data:
+            _user_cache[supabase_id] = resp.data
             return resp.data
     except Exception:
         pass
@@ -82,6 +91,7 @@ async def get_or_create_db_user(
         if resp.data:
             # Sync the public ID/clerk_id with the new Supabase ID
             supabase.from_("users").update({"clerk_id": supabase_id}).eq("id", resp.data["id"]).execute()
+            _user_cache[supabase_id] = resp.data
             return resp.data
     except Exception:
         pass
@@ -104,6 +114,7 @@ async def get_or_create_db_user(
             .execute()
         )
         if resp.data:
+            _user_cache[supabase_id] = resp.data[0]
             return resp.data[0]
     except Exception:
         # Fallback to inserting with default auto-generated UUID if custom ID fails
@@ -120,6 +131,7 @@ async def get_or_create_db_user(
                 .execute()
             )
             if resp.data:
+                _user_cache[supabase_id] = resp.data[0]
                 return resp.data[0]
         except Exception as e2:
             raise HTTPException(

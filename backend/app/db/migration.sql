@@ -24,5 +24,8 @@ CREATE TABLE IF NOT EXISTS user_problem_status (
 CREATE INDEX IF NOT EXISTS idx_user_problem_status_user ON user_problem_status(user_id);
 CREATE INDEX IF NOT EXISTS idx_user_problem_status_problem ON user_problem_status(problem_id);
 
--- 4. Reload PostgREST schema cache to ensure the API recognizes the changes immediately
+-- 4. Add composite index on submissions to speed up user+problem lookups
+CREATE INDEX IF NOT EXISTS idx_submissions_user_problem ON submissions(user_id, problem_id);
+
+-- 5. Reload PostgREST schema cache to ensure the API recognizes the changes immediately
 NOTIFY pgrst, 'reload schema';

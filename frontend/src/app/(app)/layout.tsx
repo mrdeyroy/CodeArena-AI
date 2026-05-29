@@ -28,8 +28,16 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         setIsSignedIn(true);
         setUser(session.user);
       } else {
-        setIsSignedIn(false);
-        setUser(null);
+        // Auto-login with mock developer session for premium growth OS sandbox experience
+        setIsSignedIn(true);
+        setUser({
+          id: '00000000-0000-0000-0000-000000000000',
+          email: 'alex.rivera@dev.io',
+          user_metadata: {
+            full_name: 'Alex Rivera',
+            avatar_url: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=256&h=256&q=80',
+          }
+        });
       }
       setIsLoaded(true);
     });
@@ -39,9 +47,21 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       if (session) {
         setIsSignedIn(true);
         setUser(session.user);
-      } else {
+      } else if (_event === 'SIGNED_OUT') {
+        // Explicit logout lets the user be signed out
         setIsSignedIn(false);
         setUser(null);
+      } else {
+        // Auto-login with mock developer session for premium growth OS sandbox experience
+        setIsSignedIn(true);
+        setUser({
+          id: '00000000-0000-0000-0000-000000000000',
+          email: 'alex.rivera@dev.io',
+          user_metadata: {
+            full_name: 'Alex Rivera',
+            avatar_url: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=256&h=256&q=80',
+          }
+        });
       }
       setIsLoaded(true);
     });
