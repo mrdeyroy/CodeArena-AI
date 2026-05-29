@@ -27,11 +27,30 @@ CREATE TABLE IF NOT EXISTS skill_dependencies (
 CREATE TABLE IF NOT EXISTS problems (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     title TEXT NOT NULL,
+    slug TEXT UNIQUE NOT NULL,
     difficulty TEXT NOT NULL CHECK (difficulty IN ('easy', 'medium', 'hard')),
     description TEXT NOT NULL,
     constraints TEXT,
     examples JSONB DEFAULT '[]',
-    concepts TEXT[] DEFAULT '{}'
+    concepts TEXT[] DEFAULT '{}',
+    acceptance_rate FLOAT DEFAULT 0.0,
+    estimated_time TEXT DEFAULT '',
+    companies JSONB DEFAULT '[]',
+    starter_code JSONB DEFAULT '{}',
+    hints JSONB DEFAULT '[]',
+    editorial TEXT,
+    source_url TEXT,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+-- Per-user problem status (solved / attempted / unsolved)
+CREATE TABLE IF NOT EXISTS user_problem_status (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    problem_id UUID NOT NULL REFERENCES problems(id) ON DELETE CASCADE,
+    status TEXT NOT NULL CHECK (status IN ('solved', 'attempted', 'unsolved')) DEFAULT 'unsolved',
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    UNIQUE(user_id, problem_id)
 );
 
 -- Submissions
@@ -119,3 +138,7 @@ CREATE INDEX IF NOT EXISTS idx_telemetry_user ON telemetry_events(user_id);
 CREATE INDEX IF NOT EXISTS idx_skill_states_user ON skill_states(user_id);
 CREATE INDEX IF NOT EXISTS idx_skill_states_skill ON skill_states(skill_id);
 CREATE INDEX IF NOT EXISTS idx_interviews_user ON interviews(user_id);
+CREATE INDEX IF NOT EXISTS idx_problems_slug ON problems(slug);
+CREATE INDEX IF NOT EXISTS idx_problems_difficulty ON problems(difficulty);
+CREATE INDEX IF NOT EXISTS idx_user_problem_status_user ON user_problem_status(user_id);
+CREATE INDEX IF NOT EXISTS idx_user_problem_status_problem ON user_problem_status(problem_id);

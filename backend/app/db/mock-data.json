@@ -1,0 +1,424 @@
+{
+  "problems": [
+    {
+      "id": "prob_1",
+      "title": "Two Sum",
+      "slug": "two-sum",
+      "difficulty": "Easy",
+      "acceptanceRate": 49.2,
+      "estimatedTime": "15 mins",
+      "topics": [
+        "Arrays",
+        "Hashing"
+      ],
+      "companies": [
+        "Google",
+        "Amazon",
+        "Meta",
+        "Microsoft"
+      ],
+      "status": "Solved",
+      "isAIRecommended": false,
+      "description": "Given an array of integers `nums` and an integer `target`, return *indices of the two numbers such that they add up to `target`*.\n\nYou may assume that each input would have ***exactly* one solution**, and you may not use the *same* element twice.\n\nYou can return the answer in any order.",
+      "examples": [
+        {
+          "input": "nums = [2,7,11,15], target = 9",
+          "output": "[0,1]",
+          "explanation": "Because nums[0] + nums[1] == 9, we return [0, 1]."
+        },
+        {
+          "input": "nums = [3,2,4], target = 6",
+          "output": "[1,2]"
+        }
+      ],
+      "constraints": [
+        "2 <= nums.length <= 10^4",
+        "-10^9 <= nums[i] <= 10^9",
+        "-10^9 <= target <= 10^9",
+        "Only one valid answer exists."
+      ],
+      "hints": [
+        "A really brute force way would be to search for all possible pairs of numbers but that would be O(N^2) time complexity. Can you think of something faster?",
+        "Keep track of the elements you have already seen in a hash map. For each element x, check if target - x is already in the hash map."
+      ],
+      "editorial": "The optimal solution is to use a Hash Map. As we iterate through the array, we check if the complement (target - current_element) exists in our hash map. If it does, we return the index of the complement and the current index. If it does not, we store the current element along with its index in the hash map. This approach resolves the problem in O(N) time complexity and O(N) space complexity.",
+      "starterCode": {
+        "python": "class Solution:\n    def twoSum(self, nums: List[int], target: int) -> List[int]:\n        # Write your code here\n        pass",
+        "javascript": "/**\n * @param {number[]} nums\n * @param {number} target\n * @return {number[]}\n */\nfunction twoSum(nums, target) {\n    // Write your code here\n    return [];\n}",
+        "cpp": "class Solution {\npublic:\n    vector<int> twoSum(vector<int>& nums, int target) {\n        // Write your code here\n        return {};\n    }\n};",
+        "java": "class Solution {\n    public int[] twoSum(int[] nums, int target) {\n        // Write your code here\n        return new int[0];\n    }\n}",
+        "go": "func twoSum(nums []int, target int) []int {\n    // Write your code here\n    return nil\n}"
+      }
+    },
+    {
+      "id": "prob_2",
+      "title": "Container With Most Water",
+      "slug": "container-with-most-water",
+      "difficulty": "Medium",
+      "acceptanceRate": 54.1,
+      "estimatedTime": "25 mins",
+      "topics": [
+        "Arrays",
+        "Two Pointers"
+      ],
+      "companies": [
+        "Amazon",
+        "Google",
+        "Meta"
+      ],
+      "status": "Attempted",
+      "isAIRecommended": true,
+      "description": "You are given an integer array `height` of length `n`. There are `n` vertical lines drawn such that the two endpoints of the `i`-th line are `(i, 0)` and `(i, height[i])`.\n\nFind two lines that together with the x-axis form a container, such that the container contains the most water.\n\nReturn *the maximum amount of water a container can store*.\n\n**Notice** that you may not slant the container.",
+      "examples": [
+        {
+          "input": "height = [1,8,6,2,5,4,8,3,7]",
+          "output": "49",
+          "explanation": "The above vertical lines are represented by array [1,8,6,2,5,4,8,3,7]. In this case, the max area of water (blue section) the container can contain is 49."
+        }
+      ],
+      "constraints": [
+        "n == height.length",
+        "2 <= n <= 10^5",
+        "0 <= height[i] <= 10^4"
+      ],
+      "hints": [
+        "Start with the maximum width possible (i.e. first and last vertical lines) and compute the area.",
+        "Since you want to maximize area, you need to find boundaries that maximize width * min(height_left, height_right). If you move the pointer at the taller bar inward, the width decreases, and the height constraint remains limited by the shorter bar. Thus, to potentially get a larger area, you must move the pointer at the shorter bar inward."
+      ],
+      "starterCode": {
+        "python": "class Solution:\n    def maxArea(self, height: List[int]) -> int:\n        # Write your code here\n        pass",
+        "javascript": "/**\n * @param {number[]} height\n * @return {number}\n */\nfunction maxArea(height) {\n    // Write your code here\n    return 0;\n}",
+        "cpp": "class Solution {\npublic:\n    int maxArea(vector<int>& height) {\n        // Write your code here\n        return 0;\n    }\n};",
+        "java": "class Solution {\n    public int maxArea(int[] height) {\n        // Write your code here\n        return 0;\n    }\n}"
+      }
+    },
+    {
+      "id": "prob_3",
+      "title": "Edit Distance",
+      "slug": "edit-distance",
+      "difficulty": "Hard",
+      "acceptanceRate": 52.4,
+      "estimatedTime": "40 mins",
+      "topics": [
+        "Dynamic Programming",
+        "Strings"
+      ],
+      "companies": [
+        "Google",
+        "Microsoft",
+        "Uber"
+      ],
+      "status": "Unsolved",
+      "isAIRecommended": true,
+      "description": "Given two strings `word1` and `word2`, return *the minimum number of operations required to convert `word1` to `word2`*.\n\nYou have the following three operations permitted on a word:\n- Insert a character\n- Delete a character\n- Replace a character",
+      "examples": [
+        {
+          "input": "word1 = \"horse\", word2 = \"ros\"",
+          "output": "3",
+          "explanation": "horse -> rorse (replace 'h' with 'r')\nrorse -> rose (remove 'r')\nrose -> ros (remove 'e')"
+        }
+      ],
+      "constraints": [
+        "0 <= word1.length, word2.length <= 500",
+        "word1 and word2 consist of lowercase English letters."
+      ],
+      "hints": [
+        "Define state DP[i][j] as the minimum edit distance to convert word1[0...i-1] to word2[0...j-1].",
+        "If the last characters match (word1[i-1] == word2[j-1]), then DP[i][j] = DP[i-1][j-1]. Otherwise, look at three operations: insert, delete, replace, and take the minimum of these three + 1."
+      ],
+      "starterCode": {
+        "python": "class Solution:\n    def minDistance(self, word1: str, word2: str) -> int:\n        # Write your code here\n        pass",
+        "javascript": "/**\n * @param {string} word1\n * @param {string} word2\n * @return {number}\n */\nfunction minDistance(word1, word2) {\n    // Write your code here\n    return 0;\n}",
+        "cpp": "class Solution {\npublic:\n    int minDistance(string word1, string word2) {\n        // Write your code here\n        return 0;\n    }\n};"
+      }
+    },
+    {
+      "id": "prob_4",
+      "title": "Longest Palindromic Substring",
+      "slug": "longest-palindromic-substring",
+      "difficulty": "Medium",
+      "acceptanceRate": 32.8,
+      "estimatedTime": "25 mins",
+      "topics": [
+        "Strings",
+        "Dynamic Programming"
+      ],
+      "companies": [
+        "Meta",
+        "Amazon",
+        "Google"
+      ],
+      "status": "Solved",
+      "isAIRecommended": false,
+      "description": "Given a string `s`, return *the longest palindromic substring* in `s`.",
+      "examples": [
+        {
+          "input": "s = \"babad\"",
+          "output": "\"bab\"",
+          "explanation": "\"aba\" is also a valid answer."
+        }
+      ],
+      "constraints": [
+        "1 <= s.length <= 1000",
+        "s consists of only digits and English letters."
+      ],
+      "hints": [
+        "A common approach is to expand around centers. A palindrome of length N has 2N-1 centers. Can you identify them?",
+        "Dynamic Programming is also possible: DP[i][j] indicates whether s[i...j] is a palindrome."
+      ],
+      "starterCode": {
+        "python": "class Solution:\n    def longestPalindrome(self, s: str) -> str:\n        pass"
+      }
+    },
+    {
+      "id": "prob_5",
+      "title": "Merge k Sorted Lists",
+      "slug": "merge-k-sorted-lists",
+      "difficulty": "Hard",
+      "acceptanceRate": 48.9,
+      "estimatedTime": "35 mins",
+      "topics": [
+        "Linked Lists",
+        "Divide and Conquer",
+        "Heap (Priority Queue)"
+      ],
+      "companies": [
+        "Google",
+        "Meta",
+        "Amazon",
+        "Microsoft",
+        "TikTok"
+      ],
+      "status": "Unsolved",
+      "isAIRecommended": true,
+      "description": "You are given an array of `k` linked-lists `lists`, each linked-list is sorted in ascending order.\n\n*Merge all the linked-lists into one sorted linked-list and return it.*",
+      "examples": [
+        {
+          "input": "lists = [[1,4,5],[1,3,4],[2,6]]",
+          "output": "[1,1,2,3,4,4,5,6]",
+          "explanation": "The linked-lists are:\n[\n  1->4->5,\n  1->3->4,\n  2->6\n]\nmerging them into one sorted list:\n1->1->2->3->4->4->5->6"
+        }
+      ],
+      "constraints": [
+        "k == lists.length",
+        "0 <= k <= 10^4",
+        "0 <= lists[i].length <= 500",
+        "-10^4 <= lists[i][j] <= 10^4",
+        "lists[i] is sorted in ascending order.",
+        "The sum of lists[i].length will not exceed 10^5."
+      ],
+      "hints": [
+        "Use a priority queue to keep track of the head element of all linked lists at any time. When you pull out the smallest node, insert its next node into the priority queue.",
+        "Alternatively, merge list by list or divide and conquer. Merge pairs of lists recursively."
+      ],
+      "starterCode": {
+        "python": "# Definition for singly-linked list.\n# class ListNode:\n#     def __init__(self, val=0, next=None):\n#         self.val = val\n#         self.next = next\nclass Solution:\n    def mergeKLists(self, lists: List[Optional[ListNode]]) -> Optional[ListNode]:\n        pass"
+      }
+    }
+  ],
+  "skills": [
+    {
+      "id": "node_arrays",
+      "label": "Arrays & Hashing",
+      "status": "mastered",
+      "mastery": 92,
+      "problemsCount": 45,
+      "problemsSolved": 42,
+      "lastActivity": "2026-05-28T14:30:00Z",
+      "description": "Dynamic arrays, hash tables, hash functions, frequency counting, and standard array patterns.",
+      "recommendedProblems": [
+        "prob_1"
+      ],
+      "aiInsight": "Your mastery of Arrays and Hashing is excellent. Your submissions average 94% accuracy with optimized runtime."
+    },
+    {
+      "id": "node_pointers",
+      "label": "Two Pointers",
+      "status": "mastered",
+      "mastery": 85,
+      "problemsCount": 30,
+      "problemsSolved": 26,
+      "lastActivity": "2026-05-25T11:20:00Z",
+      "description": "Linear search using index pairs, opposite endpoints, sliding buffers, fast & slow pointer setups.",
+      "recommendedProblems": [
+        "prob_2"
+      ],
+      "aiInsight": "Strong capability in two-pointer problems. Focus on complex constraints (e.g. negative numbers) to reach 100% mastery."
+    },
+    {
+      "id": "node_sliding",
+      "label": "Sliding Window",
+      "status": "learning",
+      "mastery": 65,
+      "problemsCount": 25,
+      "problemsSolved": 14,
+      "lastActivity": "2026-05-29T08:15:00Z",
+      "description": "Subarrays of fixed or dynamic size, tracking state with hash maps or double queues.",
+      "recommendedProblems": [
+        "prob_2"
+      ],
+      "aiInsight": "You occasionally struggle with boundary conditions when the window contract shrinks. Focus on maintaining invariants."
+    },
+    {
+      "id": "node_trees",
+      "label": "Binary Trees",
+      "status": "learning",
+      "mastery": 50,
+      "problemsCount": 35,
+      "problemsSolved": 17,
+      "lastActivity": "2026-05-24T16:45:00Z",
+      "description": "Tree traversals (DFS, BFS), BST operations, recursion depth, and tree transformations.",
+      "recommendedProblems": [
+        "prob_5"
+      ],
+      "aiInsight": "Your recursion logic is clean, but you tend to overcomplicate leaf-node termination. Practice standard traversal patterns."
+    },
+    {
+      "id": "node_graphs",
+      "label": "Graphs",
+      "status": "weak",
+      "mastery": 35,
+      "problemsCount": 40,
+      "problemsSolved": 10,
+      "lastActivity": "2026-05-27T18:00:00Z",
+      "description": "Adjacency matrices/lists, BFS, DFS, Dijkstra, Bellman-Ford, Kruskal, topological sorting, union-find.",
+      "recommendedProblems": [
+        "prob_5"
+      ],
+      "aiInsight": "Weakness detected: Graph traversals and cyclic path identification have a high failure rate. Focus on BFS and DFS basics first."
+    },
+    {
+      "id": "node_dp",
+      "label": "Dynamic Programming",
+      "status": "weak",
+      "mastery": 28,
+      "problemsCount": 50,
+      "problemsSolved": 8,
+      "lastActivity": "2026-05-26T20:10:00Z",
+      "description": "Memoization vs tabulation, knapsack, subsequence matching, grid pathfinding, and interval DP.",
+      "recommendedProblems": [
+        "prob_3",
+        "prob_4"
+      ],
+      "aiInsight": "You have a solid grasp of memoization, but tabulation space-optimization causes errors. Start with simple 1D DP relations."
+    },
+    {
+      "id": "node_greedy",
+      "label": "Greedy Algorithms",
+      "status": "locked",
+      "mastery": 0,
+      "problemsCount": 25,
+      "problemsSolved": 0,
+      "lastActivity": "N/A",
+      "description": "Local optimization leading to global optima. Intervals, scheduling, Huffman coding.",
+      "recommendedProblems": [],
+      "aiInsight": "Complete the Sliding Window and DP baseline pathways to unlock Greedy Algorithms."
+    }
+  ],
+  "edges": [
+    {
+      "id": "e_arr_ptr",
+      "source": "node_arrays",
+      "target": "node_pointers"
+    },
+    {
+      "id": "e_ptr_sld",
+      "source": "node_pointers",
+      "target": "node_sliding"
+    },
+    {
+      "id": "e_sld_tre",
+      "source": "node_sliding",
+      "target": "node_trees"
+    },
+    {
+      "id": "e_tre_grp",
+      "source": "node_trees",
+      "target": "node_graphs"
+    },
+    {
+      "id": "e_sld_dp",
+      "source": "node_sliding",
+      "target": "node_dp"
+    },
+    {
+      "id": "e_dp_grd",
+      "source": "node_dp",
+      "target": "node_greedy"
+    },
+    {
+      "id": "e_grp_grd",
+      "source": "node_graphs",
+      "target": "node_greedy"
+    }
+  ],
+  "contests": [
+    {
+      "id": "cnt_1",
+      "title": "Weekly Arena #72",
+      "type": "Weekly",
+      "status": "Live",
+      "difficulty": "Medium",
+      "startTime": "2026-05-29T10:00:00Z",
+      "duration": "1 hr 30 mins",
+      "participants": 1845,
+      "prizePool": "500 Arena Credits + Exclusive Badges",
+      "description": "Compete with developers worldwide on 4 algorithmic challenges of increasing difficulty.",
+      "problems": [
+        "prob_1",
+        "prob_2",
+        "prob_4",
+        "prob_3"
+      ]
+    },
+    {
+      "id": "cnt_2",
+      "title": "Meta Sponsored Hack-Match",
+      "type": "Company Sponsored",
+      "status": "Upcoming",
+      "difficulty": "Hard",
+      "startTime": "2026-06-02T15:00:00Z",
+      "duration": "3 hrs",
+      "participants": 4520,
+      "prizePool": "Fast-track Interviews + $5,000 USD",
+      "description": "Meta sponsored algorithms contest focusing on advanced data structures, graph theory, and optimizations.",
+      "problems": [
+        "prob_5",
+        "prob_3"
+      ],
+      "sponsor": "Meta"
+    },
+    {
+      "id": "cnt_3",
+      "title": "Monthly Masters Challenge",
+      "type": "Monthly",
+      "status": "Upcoming",
+      "difficulty": "Hard",
+      "startTime": "2026-06-07T18:00:00Z",
+      "duration": "2 hrs 30 mins",
+      "participants": 840,
+      "prizePool": "$1,000 Cash + Master Badge",
+      "description": "Reserved for users with rating 1800+. Extreme algorithmic tasks designed to test the boundaries of DP and Graphs.",
+      "problems": [
+        "prob_3",
+        "prob_5"
+      ]
+    },
+    {
+      "id": "cnt_4",
+      "title": "Weekly Arena #71",
+      "type": "Weekly",
+      "status": "Ended",
+      "difficulty": "Medium",
+      "startTime": "2026-05-22T10:00:00Z",
+      "duration": "1 hr 30 mins",
+      "participants": 1952,
+      "prizePool": "300 Arena Credits",
+      "description": "Weekly standard algorithms challenge.",
+      "problems": [
+        "prob_1",
+        "prob_4"
+      ]
+    }
+  ]
+}

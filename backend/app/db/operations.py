@@ -8,7 +8,7 @@ def fetch_skill_states(user_id: str) -> list[dict]:
     resp = supabase.from_("skill_states").select(
         "id, mastery, struggle_score, updated_at, skills!inner(id, name, category)"
     ).eq("user_id", user_id).execute()
-    return resp.data or []
+    return resp.data or [] if resp else []
 
 
 def fetch_recent_submissions(user_id: str, limit: int = 20) -> list[dict]:
@@ -16,13 +16,13 @@ def fetch_recent_submissions(user_id: str, limit: int = 20) -> list[dict]:
     resp = supabase.from_("submissions").select(
         "id, status, runtime, memory, language, code, created_at, problems(id, title, difficulty, concepts)"
     ).eq("user_id", user_id).order("created_at", desc=True).limit(limit).execute()
-    return resp.data or []
+    return resp.data or [] if resp else []
 
 
 def upsert_skill_state(user_id: str, skill_id: str, mastery: float, struggle: float = 0.0):
     supabase = get_supabase()
     existing = supabase.from_("skill_states").select("id").eq("user_id", user_id).eq("skill_id", skill_id).maybe_single().execute()
-    if existing.data:
+    if existing and existing.data:
         supabase.from_("skill_states").update({
             "mastery": mastery,
             "struggle_score": struggle,
@@ -49,19 +49,19 @@ def fetch_problems(filters: dict | None = None) -> list[dict]:
             else:
                 query = query.eq(k, v)
     resp = query.order("title").execute()
-    return resp.data or []
+    return resp.data or [] if resp else []
 
 
 def fetch_problem_by_slug(slug: str) -> dict | None:
     supabase = get_supabase()
     resp = supabase.from_("problems").select("*").eq("slug", slug).maybe_single().execute()
-    return resp.data
+    return resp.data if resp else None
 
 
 def fetch_problem_by_id(problem_id: str) -> dict | None:
     supabase = get_supabase()
     resp = supabase.from_("problems").select("*").eq("id", problem_id).maybe_single().execute()
-    return resp.data
+    return resp.data if resp else None
 
 
 def insert_submission(user_id: str, problem_id: str, language: str, code: str, status: str, runtime: float | None = None, memory: float | None = None) -> str:
@@ -75,7 +75,7 @@ def insert_submission(user_id: str, problem_id: str, language: str, code: str, s
         "runtime": runtime,
         "memory": memory,
     }).execute()
-    return resp.data[0]["id"] if resp.data else ""
+    return resp.data[0]["id"] if resp and resp.data else ""
 
 
 def insert_telemetry_event(user_id: str, problem_id: str, time_taken: float, attempts: int, hints_used: int, confidence: int, correct: bool):
@@ -94,13 +94,13 @@ def insert_telemetry_event(user_id: str, problem_id: str, time_taken: float, att
 def fetch_contests() -> list[dict]:
     supabase = get_supabase()
     resp = supabase.from_("contests").select("*").order("start_time", desc=True).execute()
-    return resp.data or []
+    return resp.data or [] if resp else []
 
 
 def fetch_contest_by_id(contest_id: str) -> dict | None:
     supabase = get_supabase()
     resp = supabase.from_("contests").select("*").eq("id", contest_id).maybe_single().execute()
-    return resp.data
+    return resp.data if resp else None
 
 
 def fetch_contest_leaderboard(contest_id: str) -> list[dict]:
@@ -110,7 +110,7 @@ def fetch_contest_leaderboard(contest_id: str) -> list[dict]:
     ).eq("contest_id", contest_id).execute()
 
     user_scores: dict[str, dict] = {}
-    for row in (resp.data or []):
+    for row in (resp.data or [] if resp else []):
         uid = row["user_id"]
         sub = row.get("submissions") or {}
         if uid not in user_scores:
@@ -127,10 +127,10 @@ def fetch_contest_leaderboard(contest_id: str) -> list[dict]:
 def fetch_skill_by_name(name: str) -> dict | None:
     supabase = get_supabase()
     resp = supabase.from_("skills").select("*").eq("name", name).maybe_single().execute()
-    return resp.data
+    return resp.data if resp else None
 
 
 def fetch_user_skill_state(user_id: str, skill_id: str) -> dict | None:
     supabase = get_supabase()
     resp = supabase.from_("skill_states").select("*").eq("user_id", user_id).eq("skill_id", skill_id).maybe_single().execute()
-    return resp.data
+    return resp.data if resp else None
