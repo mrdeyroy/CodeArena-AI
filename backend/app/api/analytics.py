@@ -8,19 +8,33 @@ router = APIRouter(prefix="/analytics", tags=["analytics"])
 
 @router.get("/overview")
 async def get_overview(user_id: str = Query(...), supabase=Depends(get_supabase)):
-    subs_resp = supabase.from_("submissions").select("id, status").eq("user_id", user_id).execute()
+    from fastapi.concurrency import run_in_threadpool
+    import asyncio
+
+    def fetch_subs():
+        return supabase.from_("submissions").select("id, status, problem_id").eq("user_id", user_id).execute()
+
+    def fetch_telemetry():
+        return supabase.from_("telemetry_events").select("created_at").eq("user_id", user_id).execute()
+
+    sub_task = run_in_threadpool(fetch_subs)
+    telemetry_task = run_in_threadpool(fetch_telemetry)
+    states_task = run_in_threadpool(fetch_skill_states, user_id)
+
+    subs_resp, telemetry_resp, skill_states = await asyncio.gather(
+        sub_task, telemetry_task, states_task
+    )
+
     submissions = subs_resp.data or []
     total_submissions = len(submissions)
     accepted = sum(1 for s in submissions if s["status"] == "accepted")
-    total_solved = len({s.get("problem_id") for s in submissions if s["status"] == "accepted"})
+    total_solved = len({s.get("problem_id") for s in submissions if s["status"] == "accepted" if s.get("problem_id")})
 
-    telemetry_resp = supabase.from_("telemetry_events").select("created_at").eq("user_id", user_id).execute()
     days = {e["created_at"][:10] for e in (telemetry_resp.data or []) if e.get("created_at")}
 
     acceptance_rate = round(accepted / total_submissions * 100, 1) if total_submissions > 0 else 0.0
     overall_readiness = 40.0
 
-    skill_states = fetch_skill_states(user_id)
     if skill_states:
         overall_readiness = round(sum(s["mastery"] for s in skill_states) / len(skill_states) * 100, 1)
 
