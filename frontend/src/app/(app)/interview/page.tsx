@@ -2,6 +2,7 @@
 
 import * as React from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { 
   Briefcase, 
   Sparkles, 
@@ -33,8 +34,12 @@ import {
   ResponsiveContainer 
 } from 'recharts';
 import { startInterview, submitInterviewResponse, finalizeInterview } from '@/lib/api';
+import { useVoiceInterviewStore } from '@/store/voice-interview-store';
+import { ENABLE_VOICE_INTERVIEW } from '@/config/features';
 
 export default function MockInterviewPage() {
+  const router = useRouter();
+  const voiceStore = useVoiceInterviewStore();
   const [sessionState, setSessionState] = React.useState<'select' | 'active' | 'report'>('select');
   const [selectedType, setSelectedType] = React.useState<string>('DSA');
   
@@ -97,6 +102,13 @@ export default function MockInterviewPage() {
         { speaker: 'interviewer', text: "Failed to initialize the AI Interview session. Please check your backend connection." }
       ]);
     }
+  };
+
+  const handleStartVoiceInterview = (type: string, isHybrid: boolean) => {
+    voiceStore.resetSession();
+    voiceStore.setInterviewType(type);
+    voiceStore.setHybridMode(isHybrid);
+    router.push('/interview/voice');
   };
 
   const handleSendResponse = async () => {
@@ -193,10 +205,23 @@ export default function MockInterviewPage() {
                 <p className="text-xs text-slate-400 leading-relaxed font-semibold">{i.desc}</p>
               </div>
 
-              <div className="pt-6 border-t border-slate-850 mt-4 flex justify-end">
-                <Button size="sm" icon={Play} onClick={() => handleStartInterview(i.type)}>
-                  Start Session
-                </Button>
+              <div className="pt-6 border-t border-slate-850 mt-4 flex flex-col sm:flex-row gap-2 justify-between items-stretch sm:items-center">
+                <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider hidden sm:inline-block">AI Evaluation Ready</span>
+                <div className="flex flex-wrap gap-2 justify-end">
+                  <Button size="sm" variant="outline" icon={BookOpen} onClick={() => handleStartInterview(i.type)}>
+                    Text Mode
+                  </Button>
+                  {ENABLE_VOICE_INTERVIEW && (
+                    <>
+                      <Button size="sm" variant="outline" className="border-indigo-500/35 hover:bg-indigo-950/20 text-indigo-400" icon={Mic} onClick={() => handleStartVoiceInterview(i.type, false)}>
+                        Voice Mode
+                      </Button>
+                      <Button size="sm" className="bg-indigo-650 hover:bg-indigo-600 text-white animate-pulse-subtle" icon={Sparkles} onClick={() => handleStartVoiceInterview(i.type, true)}>
+                        Hybrid Mode
+                      </Button>
+                    </>
+                  )}
+                </div>
               </div>
             </Card>
           ))}
