@@ -12,11 +12,9 @@ class Settings(BaseSettings):
 
     piston_api_url: str = "https://emkc.org/api/v2/piston"
 
-    clerk_secret_key: str | None = None
-    clerk_jwt_public_key: str | None = None
-    clerk_jwks_url: str | None = None
 
-    model_config = {"env_file": ".env", "env_file_encoding": "utf-8"}
+
+    model_config = {"env_file": ".env", "env_file_encoding": "utf-8", "extra": "ignore"}
 
 
 settings = Settings()

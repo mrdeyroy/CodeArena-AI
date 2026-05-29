@@ -1,12 +1,15 @@
+import { supabase } from './supabase';
 import { Problem, ProblemStatus, Difficulty, SkillNode, SkillEdge } from './types';
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 const DEFAULT_USER_ID = '00000000-0000-0000-0000-000000000000';
 
-function getHeaders() {
+async function getHeaders() {
+  const { data: { session } } = await supabase.auth.getSession();
+  const token = session?.access_token || 'mock-token';
   return {
     'Content-Type': 'application/json',
-    'Authorization': 'Bearer mock-token'
+    'Authorization': `Bearer ${token}`
   };
 }
 
@@ -54,7 +57,7 @@ export async function fetchProblems(filters?: { difficulty?: string; topic?: str
   }
 
   const res = await fetch(`${BASE_URL}/problems?${params.toString()}`, {
-    headers: getHeaders(),
+    headers: await getHeaders(),
   });
   if (!res.ok) throw new Error('Failed to fetch problems');
   const data = await res.json();
@@ -63,7 +66,7 @@ export async function fetchProblems(filters?: { difficulty?: string; topic?: str
 
 export async function fetchProblemBySlug(slug: string): Promise<Problem> {
   const res = await fetch(`${BASE_URL}/problems/${slug}`, {
-    headers: getHeaders(),
+    headers: await getHeaders(),
   });
   if (!res.ok) throw new Error(`Failed to fetch problem: ${slug}`);
   const data = await res.json();
@@ -73,7 +76,7 @@ export async function fetchProblemBySlug(slug: string): Promise<Problem> {
 export async function runProblem(problemId: string, language: string, code: string, stdin?: string) {
   const res = await fetch(`${BASE_URL}/problems/${problemId}/run`, {
     method: 'POST',
-    headers: getHeaders(),
+    headers: await getHeaders(),
     body: JSON.stringify({
       language,
       code,
@@ -87,7 +90,7 @@ export async function runProblem(problemId: string, language: string, code: stri
 export async function submitProblem(problemId: string, language: string, code: string) {
   const res = await fetch(`${BASE_URL}/problems/${problemId}/submit`, {
     method: 'POST',
-    headers: getHeaders(),
+    headers: await getHeaders(),
     body: JSON.stringify({
       language,
       code,
@@ -99,7 +102,7 @@ export async function submitProblem(problemId: string, language: string, code: s
 
 export async function fetchGraph(): Promise<{ nodes: SkillNode[]; edges: SkillEdge[] }> {
   const res = await fetch(`${BASE_URL}/graph`, {
-    headers: getHeaders(),
+    headers: await getHeaders(),
   });
   if (!res.ok) throw new Error('Failed to fetch skill graph');
   const data = await res.json();
@@ -108,7 +111,7 @@ export async function fetchGraph(): Promise<{ nodes: SkillNode[]; edges: SkillEd
   let skillsAnalytics: any[] = [];
   try {
     const analyticsRes = await fetch(`${BASE_URL}/analytics/skills?user_id=${DEFAULT_USER_ID}`, {
-      headers: getHeaders(),
+      headers: await getHeaders(),
     });
     if (analyticsRes.ok) {
       const analyticsData = await analyticsRes.json();
@@ -152,7 +155,7 @@ export async function fetchGraph(): Promise<{ nodes: SkillNode[]; edges: SkillEd
 
 export async function fetchNodeInsights(nodeId: string) {
   const res = await fetch(`${BASE_URL}/graph/nodes/${nodeId}/insights?user_id=${DEFAULT_USER_ID}`, {
-    headers: getHeaders(),
+    headers: await getHeaders(),
   });
   if (!res.ok) throw new Error('Failed to fetch node insights');
   return res.json();
@@ -161,7 +164,7 @@ export async function fetchNodeInsights(nodeId: string) {
 export async function sendCoachChat(message: string): Promise<string> {
   const res = await fetch(`${BASE_URL}/coach/chat`, {
     method: 'POST',
-    headers: getHeaders(),
+    headers: await getHeaders(),
     body: JSON.stringify({
       message,
     }),
@@ -174,7 +177,7 @@ export async function sendCoachChat(message: string): Promise<string> {
 export async function startInterview(type: string) {
   const res = await fetch(`${BASE_URL}/interview/sessions`, {
     method: 'POST',
-    headers: getHeaders(),
+    headers: await getHeaders(),
     body: JSON.stringify({
       interview_type: type.toLowerCase().replace(/ /g, '_'),
       duration_limit: 30
@@ -187,7 +190,7 @@ export async function startInterview(type: string) {
 export async function submitInterviewResponse(sessionId: string, answer: string) {
   const res = await fetch(`${BASE_URL}/interview/sessions/${sessionId}/response`, {
     method: 'POST',
-    headers: getHeaders(),
+    headers: await getHeaders(),
     body: JSON.stringify({
       candidate_answer: answer,
     }),
@@ -199,7 +202,7 @@ export async function submitInterviewResponse(sessionId: string, answer: string)
 export async function finalizeInterview(sessionId: string) {
   const res = await fetch(`${BASE_URL}/interview/sessions/${sessionId}/finalize`, {
     method: 'POST',
-    headers: getHeaders(),
+    headers: await getHeaders(),
   });
   if (!res.ok) throw new Error('Failed to finalize interview');
   return res.json();
@@ -207,7 +210,7 @@ export async function finalizeInterview(sessionId: string) {
 
 export async function fetchAnalyticsOverview() {
   const res = await fetch(`${BASE_URL}/analytics/overview?user_id=${DEFAULT_USER_ID}`, {
-    headers: getHeaders(),
+    headers: await getHeaders(),
   });
   if (!res.ok) throw new Error('Failed to fetch analytics overview');
   return res.json();
@@ -215,7 +218,7 @@ export async function fetchAnalyticsOverview() {
 
 export async function fetchAnalyticsProgress() {
   const res = await fetch(`${BASE_URL}/analytics/progress?user_id=${DEFAULT_USER_ID}`, {
-    headers: getHeaders(),
+    headers: await getHeaders(),
   });
   if (!res.ok) throw new Error('Failed to fetch progress');
   return res.json();
@@ -225,7 +228,7 @@ export async function fetchAnalyticsProgress() {
 
 export async function fetchSubmissionStatus(problemId: string): Promise<{ problem_id: string; status: string }> {
   const res = await fetch(`${BASE_URL}/submissions/status?problem_id=${problemId}`, {
-    headers: getHeaders(),
+    headers: await getHeaders(),
   });
   if (!res.ok) throw new Error('Failed to fetch submission status');
   return res.json();
@@ -233,7 +236,7 @@ export async function fetchSubmissionStatus(problemId: string): Promise<{ proble
 
 export async function fetchAllSubmissionStatuses(): Promise<Record<string, string>> {
   const res = await fetch(`${BASE_URL}/submissions/status`, {
-    headers: getHeaders(),
+    headers: await getHeaders(),
   });
   if (!res.ok) throw new Error('Failed to fetch submission statuses');
   const data = await res.json();
@@ -247,7 +250,7 @@ export async function fetchAllSubmissionStatuses(): Promise<Record<string, strin
 export async function updateSubmissionStatus(problemId: string, status: string): Promise<void> {
   const res = await fetch(`${BASE_URL}/submissions/status?problem_id=${problemId}&status=${status}`, {
     method: 'POST',
-    headers: getHeaders(),
+    headers: await getHeaders(),
   });
   if (!res.ok) throw new Error('Failed to update submission status');
 }

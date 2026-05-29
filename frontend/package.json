@@ -9,10 +9,9 @@
     "lint": "eslint"
   },
   "dependencies": {
-    "@clerk/nextjs": "^7.4.2",
-    "@clerk/themes": "^2.4.57",
     "@hookform/resolvers": "^5.4.0",
     "@monaco-editor/react": "^4.7.0",
+    "@supabase/supabase-js": "^2.106.2",
     "@tanstack/react-query": "^5.100.14",
     "@xyflow/react": "^12.10.2",
     "framer-motion": "^12.40.0",

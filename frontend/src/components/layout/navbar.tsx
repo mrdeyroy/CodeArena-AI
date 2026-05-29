@@ -8,7 +8,7 @@ import { mockNotifications } from '@/lib/mock-data';
 import { Badge } from '@/components/ui/badge';
 import { Modal } from '@/components/ui/modal';
 import { useRouter } from 'next/navigation';
-import { useClerk } from '@clerk/nextjs';
+import { supabase } from '@/lib/supabase';
 
 export const Navbar = () => {
   const router = useRouter();
@@ -22,7 +22,6 @@ export const Navbar = () => {
     toggleTheme 
   } = useUIStore();
   const { user, logout } = useUserStore();
-  const { signOut } = useClerk();
   
   const [profileDropdownOpen, setProfileDropdownOpen] = React.useState(false);
   const [searchQuery, setSearchQuery] = React.useState('');
@@ -171,7 +170,7 @@ export const Navbar = () => {
                 <button
                   onClick={async () => { 
                     setProfileDropdownOpen(false); 
-                    await signOut();
+                    await supabase.auth.signOut();
                     logout(); 
                     router.push('/'); 
                   }}

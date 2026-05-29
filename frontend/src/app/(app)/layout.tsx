@@ -8,32 +8,66 @@ import { MobileNav } from '@/components/layout/mobile-nav';
 import { useUIStore } from '@/store/ui-store';
 import { useUserStore } from '@/store/user-store';
 import { useRouter } from 'next/navigation';
-import { useUser } from '@clerk/nextjs';
+import { supabase } from '@/lib/supabase';
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const { sidebarOpen } = useUIStore();
   const { login, logout, updateUser, fetchProblemsList, fetchAnalytics } = useUserStore();
-  const { isLoaded, isSignedIn, user: clerkUser } = useUser();
+  
+  const [isLoaded, setIsLoaded] = React.useState(false);
+  const [isSignedIn, setIsSignedIn] = React.useState(false);
+  const [user, setUser] = React.useState<any>(null);
   const hasLoaded = React.useRef(false);
 
-  // Sync Clerk authentication state with Zustand store
+  // Sync Supabase authentication state on mount and changes
+  React.useEffect(() => {
+    // Check current session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) {
+        setIsSignedIn(true);
+        setUser(session.user);
+      } else {
+        setIsSignedIn(false);
+        setUser(null);
+      }
+      setIsLoaded(true);
+    });
+
+    // Listen to auth state changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session) {
+        setIsSignedIn(true);
+        setUser(session.user);
+      } else {
+        setIsSignedIn(false);
+        setUser(null);
+      }
+      setIsLoaded(true);
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, []);
+
+  // Sync Supabase user metadata with Zustand store
   React.useEffect(() => {
     if (isLoaded) {
-      if (isSignedIn && clerkUser) {
+      if (isSignedIn && user) {
         login(); // set isLoggedIn = true in Zustand
         updateUser({
-          name: clerkUser.fullName || clerkUser.username || "CodeArena User",
-          email: clerkUser.primaryEmailAddress?.emailAddress || "",
-          avatar: clerkUser.imageUrl || "",
+          name: user.user_metadata?.full_name || user.user_metadata?.name || user.email?.split('@')[0] || "CodeArena User",
+          email: user.email || "",
+          avatar: user.user_metadata?.avatar_url || "",
         });
       } else {
         logout(); // set isLoggedIn = false in Zustand
       }
     }
-  }, [isLoaded, isSignedIn, clerkUser, login, logout, updateUser]);
+  }, [isLoaded, isSignedIn, user, login, logout, updateUser]);
 
-  // Route protection based on Clerk loaded state
+  // Route protection based on Supabase loaded state
   React.useEffect(() => {
     if (isLoaded && !isSignedIn) {
       router.push('/login');
