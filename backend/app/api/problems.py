@@ -110,6 +110,33 @@ async def get_problem(slug: str):
     if not problem:
         raise HTTPException(status_code=404, detail="Problem not found")
     
+    # Check if examples are missing
+    examples = problem.get("examples") or []
+    if not examples:
+        from app.ai.agents import generate_test_cases
+        examples = await generate_test_cases(problem["title"], problem.get("description", ""))
+        if examples:
+            try:
+                supabase = get_supabase()
+                supabase.from_("problems").update({"examples": examples}).eq("id", problem["id"]).execute()
+                problem["examples"] = examples
+            except Exception as e:
+                print("Failed to save generated examples to DB:", e)
+
+    # Check if starter code is missing
+    starter_code = problem.get("starter_code") or {}
+    starter_code = {k: v for k, v in starter_code.items() if v}
+    if not starter_code:
+        from app.ai.agents import generate_starter_code
+        starter_code = await generate_starter_code(problem["title"], problem.get("description", ""))
+        if starter_code:
+            try:
+                supabase = get_supabase()
+                supabase.from_("problems").update({"starter_code": starter_code}).eq("id", problem["id"]).execute()
+                problem["starter_code"] = starter_code
+            except Exception as e:
+                print("Failed to save generated starter code to DB:", e)
+
     meta = mock_problems_metadata.get(slug) or {}
     return Problem(
         id=problem["id"],
@@ -118,14 +145,14 @@ async def get_problem(slug: str):
         difficulty=problem["difficulty"],
         description=problem.get("description", ""),
         constraints=problem.get("constraints") or "\n".join(meta.get("constraints", [])),
-        examples=problem.get("examples") or meta.get("examples") or [],
+        examples=problem.get("examples") or examples or meta.get("examples") or [],
         concepts=problem.get("concepts") or meta.get("topics") or [],
         acceptance_rate=round(meta.get("acceptanceRate") or problem.get("acceptance_rate") or 0.0, 1),
         estimated_time=meta.get("estimatedTime") or problem.get("estimated_time") or "",
         companies=meta.get("companies") or problem.get("companies") or [],
-        starter_code=meta.get("starterCode") or problem.get("starter_code") or {},
+        starter_code=problem.get("starter_code") or starter_code or meta.get("starterCode") or {},
         hints=meta.get("hints") or problem.get("hints") or [],
-        editorial=meta.get("editorial") or problem.get("editorial"),
+        editorial=problem.get("editorial") or meta.get("editorial"),
     )
 
 
@@ -160,6 +187,17 @@ async def submit_problem(
         raise HTTPException(status_code=404, detail="Problem not found")
 
     examples = problem.get("examples") or []
+    if not examples:
+        from app.ai.agents import generate_test_cases
+        examples = await generate_test_cases(problem["title"], problem.get("description", ""))
+        if examples:
+            try:
+                supabase = get_supabase()
+                supabase.from_("problems").update({"examples": examples}).eq("id", problem_id).execute()
+                problem["examples"] = examples
+            except Exception as e:
+                print("Failed to save generated examples to DB:", e)
+
     if not examples:
         raise HTTPException(status_code=400, detail="Problem has no test cases")
 

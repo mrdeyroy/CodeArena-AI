@@ -27,24 +27,23 @@ from app.db.supabase import get_supabase
 # ── LeetCode GraphQL API ──────────────────────────────────────────────
 
 LEETCODE_GRAPHQL = "https://leetcode.com/graphql"
-USER_AGENT = "CodeArenaAI/0.1 (seed-script; educational purposes)"
+USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
 
 FETCH_LIST_QUERY = """
-query problems($skip: Int, $take: Int) {
-  problemsetQuestionList(
-    categorySlug: ""
-    limit: $take
+query problemsetQuestionList($categorySlug: String, $limit: Int, $skip: Int, $filters: QuestionListFilterInput) {
+  problemsetQuestionList: questionList(
+    categorySlug: $categorySlug
+    limit: $limit
     skip: $skip
-    filters: {}
+    filters: $filters
   ) {
-    total
-    questions {
+    total: totalNum
+    questions: data {
       title
       titleSlug
       difficulty
       acRate
       topicTags { name slug }
-      content
     }
   }
 }
@@ -56,13 +55,11 @@ query question($titleSlug: String!) {
     title
     titleSlug
     difficulty
-    acRate
     content
     topicTags { name slug }
     hints
     codeSnippets { lang langSlug code }
     companyTagStats
-    solution { content }
     stats
   }
 }
@@ -246,7 +243,12 @@ async def fetch_json(client: httpx.AsyncClient, query: str, variables: dict) -> 
 
 async def fetch_problem_list(client: httpx.AsyncClient, skip: int, take: int) -> list[dict]:
     """Fetch a page of problems from LeetCode."""
-    data = await fetch_json(client, FETCH_LIST_QUERY, {"skip": skip, "take": take})
+    data = await fetch_json(client, FETCH_LIST_QUERY, {
+        "categorySlug": "",
+        "limit": take,
+        "skip": skip,
+        "filters": {}
+    })
     if not data:
         return []
     questions = data.get("problemsetQuestionList", {}).get("questions", [])
@@ -307,7 +309,7 @@ def parse_problem(question: dict, detail: dict | None) -> dict | None:
             editorial = html_to_markdown(solution["content"])
 
     # Parse HTML description to markdown
-    raw_html = question.get("content") or ""
+    raw_html = (detail.get("content") if detail else None) or question.get("content") or ""
     description = html_to_markdown(raw_html)
     
     # Extract constraints from description (everything after "Constraints:")
@@ -459,25 +461,21 @@ async def seed():
     print("\nConnecting to Supabase...")
     supabase = get_supabase()
     
-    # Check if we already have data
-    existing = supabase.from_("problems").select("id", count="exact").limit(1).execute()
-    existing_count = existing.count if hasattr(existing, 'count') else 0
-    if existing_count and existing_count > 5:
-        print(f"Already have {existing_count} problems in the DB. Skipping insert.")
-        print("To re-seed, run: supabase.from_('problems').delete().neq('id', '00000000-0000-0000-0000-000000000000').execute()")
-        return
+    # Upsert problems (insert new ones, update existing ones by slug)
+    print(f"Upserting {len(selected)} problems into Supabase...")
     
-    print(f"Inserting {len(selected)} problems into Supabase...")
-    
+    upserted_count = 0
     for i, problem in enumerate(selected):
         try:
-            supabase.from_("problems").insert(problem).execute()
+            # We use upsert with on_conflict to avoid duplicate slug violations and update existing problems
+            supabase.from_("problems").upsert(problem, on_conflict="slug").execute()
+            upserted_count += 1
             if (i + 1) % 10 == 0:
-                print(f"  Inserted {i+1}/{len(selected)}")
+                print(f"  Upserted {i+1}/{len(selected)}")
         except Exception as e:
-            print(f"  ERROR inserting '{problem['title']}': {e}")
+            print(f"  ERROR upserting '{problem['title']}': {e}")
     
-    print(f"\n✅ Done! Inserted {len(selected)} problems into Supabase.")
+    print(f"\n✅ Done! Upserted {upserted_count} problems into Supabase.")
     print(f"   Table: problems")
     print(f"   Fields: title, slug, difficulty, description, constraints, concepts,")
     print(f"           acceptance_rate, estimated_time, companies, starter_code, hints, editorial")

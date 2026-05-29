@@ -89,18 +89,11 @@ async def recommend(request: RecommendRequest):
         supabase = get_supabase()
         resp = supabase.from_("problems").select("id, title, difficulty, concepts").execute()
         available = resp.data or []
-    except Exception:
-        # Fallback to hardcoded if Supabase is unavailable
-        available = [
-            {"id": "p1", "title": "Two Sum", "difficulty": "easy", "concepts": ["arrays", "hashmaps"]},
-            {"id": "p2", "title": "Valid Parentheses", "difficulty": "easy", "concepts": ["strings", "stack"]},
-            {"id": "p3", "title": "Merge Intervals", "difficulty": "medium", "concepts": ["arrays", "sorting"]},
-            {"id": "p4", "title": "Binary Tree Level Order", "difficulty": "medium", "concepts": ["trees", "bfs"]},
-            {"id": "p5", "title": "Course Schedule", "difficulty": "medium", "concepts": ["graphs", "dfs"]},
-            {"id": "p6", "title": "Longest Increasing Subsequence", "difficulty": "medium", "concepts": ["arrays", "dp"]},
-            {"id": "p7", "title": "Word Ladder", "difficulty": "hard", "concepts": ["strings", "graphs", "bfs"]},
-            {"id": "p8", "title": "Median of Two Sorted Arrays", "difficulty": "hard", "concepts": ["arrays", "binary_search"]},
-        ]
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to query problems database: {str(e)}")
+    
+    if not available:
+        raise HTTPException(status_code=400, detail="No practice problems found in database to recommend.")
     try:
         result = await recommend_problems(
             current_mastery=request.current_mastery,

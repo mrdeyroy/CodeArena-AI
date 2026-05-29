@@ -218,3 +218,55 @@ async def analyze_plagiarism(code_a: str, code_b: str, language: str) -> dict:
         temperature=0.2,
     )
     return json.loads(resp.choices[0].message.content or "{}")
+
+
+async def generate_test_cases(problem_title: str, problem_description: str) -> list[dict]:
+    client = _client()
+    prompt = (
+        f"Problem: {problem_title}\n"
+        f"Description: {problem_description}\n\n"
+        "Extract or generate exactly 3 representative test cases for this coding problem. "
+        "Each test case must contain:\n"
+        "- input: string representing the standard input/arguments format (e.g. 'nums = [2,7,11,15], target = 9' or raw text input values)\n"
+        "- output: string representing the expected return value or output\n"
+        "- explanation: optional short description\n\n"
+        'Respond in JSON format: {"examples": [{"input": "...", "output": "...", "explanation": "..."}]}'
+    )
+
+    resp = client.chat.completions.create(
+        model=settings.ai_model,
+        messages=[
+            {"role": "system", "content": _AI_SYSTEM},
+            {"role": "user", "content": prompt},
+        ],
+        temperature=0.2,
+    )
+    try:
+        data = json.loads(resp.choices[0].message.content or "{}")
+        return data.get("examples", [])
+    except Exception:
+        return []
+
+
+async def generate_starter_code(problem_title: str, problem_description: str) -> dict[str, str]:
+    client = _client()
+    prompt = (
+        f"Problem: {problem_title}\n"
+        f"Description: {problem_description}\n\n"
+        "Generate function signature/class templates for this coding problem in the following languages: python, javascript, cpp, java.\n"
+        "Keep them as empty template templates with standard commenting blocks.\n\n"
+        'Respond in JSON format: {"python": "...", "javascript": "...", "cpp": "...", "java": "..."}'
+    )
+
+    resp = client.chat.completions.create(
+        model=settings.ai_model,
+        messages=[
+            {"role": "system", "content": _AI_SYSTEM},
+            {"role": "user", "content": prompt},
+        ],
+        temperature=0.1,
+    )
+    try:
+        return json.loads(resp.choices[0].message.content or "{}")
+    except Exception:
+        return {}
