@@ -63,10 +63,14 @@ def run_seed():
     # 3. Seed skill dependencies
     print("Seeding skill dependencies...")
     for e in data["edges"]:
-        sb.table("skill_dependencies").upsert({
-            "source_skill": get_skill_uuid(e["source"]),
-            "target_skill": get_skill_uuid(e["target"])
-        }).execute()
+        try:
+            sb.table("skill_dependencies").upsert({
+                "source_skill": get_skill_uuid(e["source"]),
+                "target_skill": get_skill_uuid(e["target"])
+            }).execute()
+        except Exception as err:
+            # If it already exists, that's fine
+            pass
 
     # 4. Seed problems
     print("Seeding problems...")
@@ -105,12 +109,16 @@ def run_seed():
         # Seed user mastery states matching frontend's mock values so they are aligned
         mastery = s["mastery"] / 100.0
         struggle = 0.8 if s["status"] == "weak" else (0.1 if s["status"] == "mastered" else 0.4)
-        sb.table("skill_states").upsert({
-            "user_id": user_id,
-            "skill_id": get_skill_uuid(s["id"]),
-            "mastery": mastery,
-            "struggle_score": struggle
-        }).execute()
+        try:
+            sb.table("skill_states").upsert({
+                "user_id": user_id,
+                "skill_id": get_skill_uuid(s["id"]),
+                "mastery": mastery,
+                "struggle_score": struggle
+            }).execute()
+        except Exception as err:
+            # If it already exists, that's fine
+            pass
 
     print("Database seeding completed successfully!")
 

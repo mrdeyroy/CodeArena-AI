@@ -117,7 +117,7 @@
       }
     ],
     "companyTagStats": null,
-    "stats": "{\"totalAccepted\": \"21.9M\", \"totalSubmission\": \"38M\", \"totalAcceptedRaw\": 21888636, \"totalSubmissionRaw\": 38047098, \"acRate\": \"57.5%\"}"
+    "stats": "{\"totalAccepted\": \"21.9M\", \"totalSubmission\": \"38M\", \"totalAcceptedRaw\": 21889124, \"totalSubmissionRaw\": 38047769, \"acRate\": \"57.5%\"}"
   },
   "add-two-numbers": {
     "title": "Add Two Numbers",
@@ -237,7 +237,7 @@
       }
     ],
     "companyTagStats": null,
-    "stats": "{\"totalAccepted\": \"7.1M\", \"totalSubmission\": \"14.6M\", \"totalAcceptedRaw\": 7072352, \"totalSubmissionRaw\": 14578983, \"acRate\": \"48.5%\"}"
+    "stats": "{\"totalAccepted\": \"7.1M\", \"totalSubmission\": \"14.6M\", \"totalAcceptedRaw\": 7072407, \"totalSubmissionRaw\": 14579068, \"acRate\": \"48.5%\"}"
   },
   "longest-substring-without-repeating-characters": {
     "title": "Longest Substring Without Repeating Characters",
@@ -359,7 +359,7 @@
       }
     ],
     "companyTagStats": null,
-    "stats": "{\"totalAccepted\": \"9.5M\", \"totalSubmission\": \"24.4M\", \"totalAcceptedRaw\": 9546443, \"totalSubmissionRaw\": 24416878, \"acRate\": \"39.1%\"}"
+    "stats": "{\"totalAccepted\": \"9.5M\", \"totalSubmission\": \"24.4M\", \"totalAcceptedRaw\": 9546581, \"totalSubmissionRaw\": 24417151, \"acRate\": \"39.1%\"}"
   },
   "median-of-two-sorted-arrays": {
     "title": "Median of Two Sorted Arrays",
@@ -479,7 +479,7 @@
       }
     ],
     "companyTagStats": null,
-    "stats": "{\"totalAccepted\": \"4.3M\", \"totalSubmission\": \"9.2M\", \"totalAcceptedRaw\": 4284487, \"totalSubmissionRaw\": 9193274, \"acRate\": \"46.6%\"}"
+    "stats": "{\"totalAccepted\": \"4.3M\", \"totalSubmission\": \"9.2M\", \"totalAcceptedRaw\": 4284536, \"totalSubmissionRaw\": 9193342, \"acRate\": \"46.6%\"}"
   },
   "longest-palindromic-substring": {
     "title": "Longest Palindromic Substring",
@@ -603,7 +603,7 @@
       }
     ],
     "companyTagStats": null,
-    "stats": "{\"totalAccepted\": \"4.8M\", \"totalSubmission\": \"12.6M\", \"totalAcceptedRaw\": 4770914, \"totalSubmissionRaw\": 12597566, \"acRate\": \"37.9%\"}"
+    "stats": "{\"totalAccepted\": \"4.8M\", \"totalSubmission\": \"12.6M\", \"totalAcceptedRaw\": 4770960, \"totalSubmissionRaw\": 12597648, \"acRate\": \"37.9%\"}"
   },
   "zigzag-conversion": {
     "title": "Zigzag Conversion",
@@ -715,7 +715,7 @@
       }
     ],
     "companyTagStats": null,
-    "stats": "{\"totalAccepted\": \"2.2M\", \"totalSubmission\": \"4.1M\", \"totalAcceptedRaw\": 2224527, \"totalSubmissionRaw\": 4105169, \"acRate\": \"54.2%\"}"
+    "stats": "{\"totalAccepted\": \"2.2M\", \"totalSubmission\": \"4.1M\", \"totalAcceptedRaw\": 2224562, \"totalSubmissionRaw\": 4105215, \"acRate\": \"54.2%\"}"
   },
   "reverse-integer": {
     "title": "Reverse Integer",
@@ -827,7 +827,7 @@
       }
     ],
     "companyTagStats": null,
-    "stats": "{\"totalAccepted\": \"5M\", \"totalSubmission\": \"15.7M\", \"totalAcceptedRaw\": 5026867, \"totalSubmissionRaw\": 15747873, \"acRate\": \"31.9%\"}"
+    "stats": "{\"totalAccepted\": \"5M\", \"totalSubmission\": \"15.7M\", \"totalAcceptedRaw\": 5026968, \"totalSubmissionRaw\": 15748116, \"acRate\": \"31.9%\"}"
   },
   "string-to-integer-atoi": {
     "title": "String to Integer (atoi)",
@@ -939,7 +939,7 @@
       }
     ],
     "companyTagStats": null,
-    "stats": "{\"totalAccepted\": \"2.5M\", \"totalSubmission\": \"11.7M\", \"totalAcceptedRaw\": 2460902, \"totalSubmissionRaw\": 11699116, \"acRate\": \"21.0%\"}"
+    "stats": "{\"totalAccepted\": \"2.5M\", \"totalSubmission\": \"11.7M\", \"totalAcceptedRaw\": 2460931, \"totalSubmissionRaw\": 11699220, \"acRate\": \"21.0%\"}"
   },
   "palindrome-number": {
     "title": "Palindrome Number",
@@ -1053,7 +1053,7 @@
       }
     ],
     "companyTagStats": null,
-    "stats": "{\"totalAccepted\": \"8.2M\", \"totalSubmission\": \"13.5M\", \"totalAcceptedRaw\": 8186757, \"totalSubmissionRaw\": 13513212, \"acRate\": \"60.6%\"}"
+    "stats": "{\"totalAccepted\": \"8.2M\", \"totalSubmission\": \"13.5M\", \"totalAcceptedRaw\": 8186830, \"totalSubmissionRaw\": 13513322, \"acRate\": \"60.6%\"}"
   },
   "regular-expression-matching": {
     "title": "Regular Expression Matching",
@@ -1173,7 +1173,7 @@
       }
     ],
     "companyTagStats": null,
-    "stats": "{\"totalAccepted\": \"1.4M\", \"totalSubmission\": \"4.5M\", \"totalAcceptedRaw\": 1402870, \"totalSubmissionRaw\": 4528242, \"acRate\": \"31.0%\"}"
+    "stats": "{\"totalAccepted\": \"1.4M\", \"totalSubmission\": \"4.5M\", \"totalAcceptedRaw\": 1402882, \"totalSubmissionRaw\": 4528273, \"acRate\": \"31.0%\"}"
   },
   "container-with-most-water": {
     "title": "Container With Most Water",
@@ -1297,7 +1297,7 @@
       }
     ],
     "companyTagStats": null,
-    "stats": "{\"totalAccepted\": \"5.4M\", \"totalSubmission\": \"9M\", \"totalAcceptedRaw\": 5409361, \"totalSubmissionRaw\": 9005264, \"acRate\": \"60.1%\"}"
+    "stats": "{\"totalAccepted\": \"5.4M\", \"totalSubmission\": \"9M\", \"totalAcceptedRaw\": 5409445, \"totalSubmissionRaw\": 9005386, \"acRate\": \"60.1%\"}"
   },
   "integer-to-roman": {
     "title": "Integer to Roman",
@@ -1417,7 +1417,7 @@
       }
     ],
     "companyTagStats": null,
-    "stats": "{\"totalAccepted\": \"2.2M\", \"totalSubmission\": \"3M\", \"totalAcceptedRaw\": 2158282, \"totalSubmissionRaw\": 3039600, \"acRate\": \"71.0%\"}"
+    "stats": "{\"totalAccepted\": \"2.2M\", \"totalSubmission\": \"3M\", \"totalAcceptedRaw\": 2158304, \"totalSubmissionRaw\": 3039627, \"acRate\": \"71.0%\"}"
   },
   "roman-to-integer": {
     "title": "Roman to Integer",
@@ -1539,7 +1539,7 @@
       }
     ],
     "companyTagStats": null,
-    "stats": "{\"totalAccepted\": \"5.9M\", \"totalSubmission\": \"8.9M\", \"totalAcceptedRaw\": 5915804, \"totalSubmissionRaw\": 8874282, \"acRate\": \"66.7%\"}"
+    "stats": "{\"totalAccepted\": \"5.9M\", \"totalSubmission\": \"8.9M\", \"totalAcceptedRaw\": 5915862, \"totalSubmissionRaw\": 8874348, \"acRate\": \"66.7%\"}"
   },
   "longest-common-prefix": {
     "title": "Longest Common Prefix",
@@ -1659,7 +1659,7 @@
       }
     ],
     "companyTagStats": null,
-    "stats": "{\"totalAccepted\": \"5.8M\", \"totalSubmission\": \"12.2M\", \"totalAcceptedRaw\": 5816807, \"totalSubmissionRaw\": 12219182, \"acRate\": \"47.6%\"}"
+    "stats": "{\"totalAccepted\": \"5.8M\", \"totalSubmission\": \"12.2M\", \"totalAcceptedRaw\": 5816896, \"totalSubmissionRaw\": 12219319, \"acRate\": \"47.6%\"}"
   },
   "3sum": {
     "title": "3Sum",
@@ -1783,7 +1783,7 @@
       }
     ],
     "companyTagStats": null,
-    "stats": "{\"totalAccepted\": \"6M\", \"totalSubmission\": \"15.4M\", \"totalAcceptedRaw\": 6005967, \"totalSubmissionRaw\": 15353071, \"acRate\": \"39.1%\"}"
+    "stats": "{\"totalAccepted\": \"6M\", \"totalSubmission\": \"15.4M\", \"totalAcceptedRaw\": 6006038, \"totalSubmissionRaw\": 15353254, \"acRate\": \"39.1%\"}"
   },
   "3sum-closest": {
     "title": "3Sum Closest",
@@ -1903,7 +1903,7 @@
       }
     ],
     "companyTagStats": null,
-    "stats": "{\"totalAccepted\": \"1.9M\", \"totalSubmission\": \"3.8M\", \"totalAcceptedRaw\": 1857159, \"totalSubmissionRaw\": 3821398, \"acRate\": \"48.6%\"}"
+    "stats": "{\"totalAccepted\": \"1.9M\", \"totalSubmission\": \"3.8M\", \"totalAcceptedRaw\": 1857182, \"totalSubmissionRaw\": 3821431, \"acRate\": \"48.6%\"}"
   },
   "letter-combinations-of-a-phone-number": {
     "title": "Letter Combinations of a Phone Number",
@@ -2023,7 +2023,7 @@
       }
     ],
     "companyTagStats": null,
-    "stats": "{\"totalAccepted\": \"3M\", \"totalSubmission\": \"4.6M\", \"totalAcceptedRaw\": 3043029, \"totalSubmissionRaw\": 4604259, \"acRate\": \"66.1%\"}"
+    "stats": "{\"totalAccepted\": \"3M\", \"totalSubmission\": \"4.6M\", \"totalAcceptedRaw\": 3043048, \"totalSubmissionRaw\": 4604282, \"acRate\": \"66.1%\"}"
   },
   "4sum": {
     "title": "4Sum",
@@ -2143,7 +2143,7 @@
       }
     ],
     "companyTagStats": null,
-    "stats": "{\"totalAccepted\": \"1.7M\", \"totalSubmission\": \"4.2M\", \"totalAcceptedRaw\": 1711763, \"totalSubmissionRaw\": 4208348, \"acRate\": \"40.7%\"}"
+    "stats": "{\"totalAccepted\": \"1.7M\", \"totalSubmission\": \"4.2M\", \"totalAcceptedRaw\": 1711800, \"totalSubmissionRaw\": 4208412, \"acRate\": \"40.7%\"}"
   },
   "remove-nth-node-from-end-of-list": {
     "title": "Remove Nth Node From End of List",
@@ -2261,7 +2261,7 @@
       }
     ],
     "companyTagStats": null,
-    "stats": "{\"totalAccepted\": \"4.2M\", \"totalSubmission\": \"8.2M\", \"totalAcceptedRaw\": 4237335, \"totalSubmissionRaw\": 8207193, \"acRate\": \"51.6%\"}"
+    "stats": "{\"totalAccepted\": \"4.2M\", \"totalSubmission\": \"8.2M\", \"totalAcceptedRaw\": 4237398, \"totalSubmissionRaw\": 8207284, \"acRate\": \"51.6%\"}"
   },
   "valid-parentheses": {
     "title": "Valid Parentheses",
@@ -2381,7 +2381,7 @@
       }
     ],
     "companyTagStats": null,
-    "stats": "{\"totalAccepted\": \"7.6M\", \"totalSubmission\": \"17.2M\", \"totalAcceptedRaw\": 7618470, \"totalSubmissionRaw\": 17233045, \"acRate\": \"44.2%\"}"
+    "stats": "{\"totalAccepted\": \"7.6M\", \"totalSubmission\": \"17.2M\", \"totalAcceptedRaw\": 7618572, \"totalSubmissionRaw\": 17233259, \"acRate\": \"44.2%\"}"
   },
   "merge-two-sorted-lists": {
     "title": "Merge Two Sorted Lists",
@@ -2497,7 +2497,7 @@
       }
     ],
     "companyTagStats": null,
-    "stats": "{\"totalAccepted\": \"6.3M\", \"totalSubmission\": \"9.2M\", \"totalAcceptedRaw\": 6303487, \"totalSubmissionRaw\": 9227156, \"acRate\": \"68.3%\"}"
+    "stats": "{\"totalAccepted\": \"6.3M\", \"totalSubmission\": \"9.2M\", \"totalAcceptedRaw\": 6303538, \"totalSubmissionRaw\": 9227222, \"acRate\": \"68.3%\"}"
   },
   "generate-parentheses": {
     "title": "Generate Parentheses",
@@ -2617,7 +2617,7 @@
       }
     ],
     "companyTagStats": null,
-    "stats": "{\"totalAccepted\": \"2.9M\", \"totalSubmission\": \"3.7M\", \"totalAcceptedRaw\": 2917305, \"totalSubmissionRaw\": 3707602, \"acRate\": \"78.7%\"}"
+    "stats": "{\"totalAccepted\": \"2.9M\", \"totalSubmission\": \"3.7M\", \"totalAcceptedRaw\": 2917342, \"totalSubmissionRaw\": 3707641, \"acRate\": \"78.7%\"}"
   },
   "merge-k-sorted-lists": {
     "title": "Merge k Sorted Lists",
@@ -2741,7 +2741,7 @@
       }
     ],
     "companyTagStats": null,
-    "stats": "{\"totalAccepted\": \"3M\", \"totalSubmission\": \"5.1M\", \"totalAcceptedRaw\": 3014569, \"totalSubmissionRaw\": 5057247, \"acRate\": \"59.6%\"}"
+    "stats": "{\"totalAccepted\": \"3M\", \"totalSubmission\": \"5.1M\", \"totalAcceptedRaw\": 3014672, \"totalSubmissionRaw\": 5057357, \"acRate\": \"59.6%\"}"
   },
   "swap-nodes-in-pairs": {
     "title": "Swap Nodes in Pairs",
@@ -2857,7 +2857,7 @@
       }
     ],
     "companyTagStats": null,
-    "stats": "{\"totalAccepted\": \"1.9M\", \"totalSubmission\": \"2.8M\", \"totalAcceptedRaw\": 1938440, \"totalSubmissionRaw\": 2787081, \"acRate\": \"69.6%\"}"
+    "stats": "{\"totalAccepted\": \"1.9M\", \"totalSubmission\": \"2.8M\", \"totalAcceptedRaw\": 1938456, \"totalSubmissionRaw\": 2787101, \"acRate\": \"69.6%\"}"
   },
   "reverse-nodes-in-k-group": {
     "title": "Reverse Nodes in k-Group",
@@ -2973,7 +2973,7 @@
       }
     ],
     "companyTagStats": null,
-    "stats": "{\"totalAccepted\": \"1.6M\", \"totalSubmission\": \"2.4M\", \"totalAcceptedRaw\": 1556312, \"totalSubmissionRaw\": 2353401, \"acRate\": \"66.1%\"}"
+    "stats": "{\"totalAccepted\": \"1.6M\", \"totalSubmission\": \"2.4M\", \"totalAcceptedRaw\": 1556328, \"totalSubmissionRaw\": 2353422, \"acRate\": \"66.1%\"}"
   },
   "remove-duplicates-from-sorted-array": {
     "title": "Remove Duplicates from Sorted Array",
@@ -3078,7 +3078,7 @@
       }
     ],
     "companyTagStats": null,
-    "stats": "{\"totalAccepted\": \"7.9M\", \"totalSubmission\": \"12.6M\", \"totalAcceptedRaw\": 7920866, \"totalSubmissionRaw\": 12600153, \"acRate\": \"62.9%\"}"
+    "stats": "{\"totalAccepted\": \"7.9M\", \"totalSubmission\": \"12.6M\", \"totalAcceptedRaw\": 7920963, \"totalSubmissionRaw\": 12600285, \"acRate\": \"62.9%\"}"
   },
   "remove-element": {
     "title": "Remove Element",
@@ -3183,7 +3183,7 @@
       }
     ],
     "companyTagStats": null,
-    "stats": "{\"totalAccepted\": \"5.3M\", \"totalSubmission\": \"8.5M\", \"totalAcceptedRaw\": 5276424, \"totalSubmissionRaw\": 8534917, \"acRate\": \"61.8%\"}"
+    "stats": "{\"totalAccepted\": \"5.3M\", \"totalSubmission\": \"8.5M\", \"totalAcceptedRaw\": 5276474, \"totalSubmissionRaw\": 8534978, \"acRate\": \"61.8%\"}"
   },
   "find-the-index-of-the-first-occurrence-in-a-string": {
     "title": "Find the Index of the First Occurrence in a String",
@@ -3303,7 +3303,7 @@
       }
     ],
     "companyTagStats": null,
-    "stats": "{\"totalAccepted\": \"4.1M\", \"totalSubmission\": \"8.8M\", \"totalAcceptedRaw\": 4099194, \"totalSubmissionRaw\": 8782073, \"acRate\": \"46.7%\"}"
+    "stats": "{\"totalAccepted\": \"4.1M\", \"totalSubmission\": \"8.8M\", \"totalAcceptedRaw\": 4099233, \"totalSubmissionRaw\": 8782143, \"acRate\": \"46.7%\"}"
   },
   "divide-two-integers": {
     "title": "Divide Two Integers",
@@ -3419,7 +3419,7 @@
       }
     ],
     "companyTagStats": null,
-    "stats": "{\"totalAccepted\": \"1.2M\", \"totalSubmission\": \"6M\", \"totalAcceptedRaw\": 1179640, \"totalSubmissionRaw\": 5955520, \"acRate\": \"19.8%\"}"
+    "stats": "{\"totalAccepted\": \"1.2M\", \"totalSubmission\": \"6M\", \"totalAcceptedRaw\": 1179647, \"totalSubmissionRaw\": 5955554, \"acRate\": \"19.8%\"}"
   },
   "substring-with-concatenation-of-all-words": {
     "title": "Substring with Concatenation of All Words",
@@ -3539,7 +3539,7 @@
       }
     ],
     "companyTagStats": null,
-    "stats": "{\"totalAccepted\": \"719.6K\", \"totalSubmission\": \"2.1M\", \"totalAcceptedRaw\": 719620, \"totalSubmissionRaw\": 2088925, \"acRate\": \"34.4%\"}"
+    "stats": "{\"totalAccepted\": \"719.6K\", \"totalSubmission\": \"2.1M\", \"totalAcceptedRaw\": 719627, \"totalSubmissionRaw\": 2088939, \"acRate\": \"34.4%\"}"
   },
   "next-permutation": {
     "title": "Next Permutation",
@@ -3640,7 +3640,7 @@
       }
     ],
     "companyTagStats": null,
-    "stats": "{\"totalAccepted\": \"2.3M\", \"totalSubmission\": \"5.1M\", \"totalAcceptedRaw\": 2287395, \"totalSubmissionRaw\": 5051108, \"acRate\": \"45.3%\"}"
+    "stats": "{\"totalAccepted\": \"2.3M\", \"totalSubmission\": \"5.1M\", \"totalAcceptedRaw\": 2287437, \"totalSubmissionRaw\": 5051170, \"acRate\": \"45.3%\"}"
   },
   "longest-valid-parentheses": {
     "title": "Longest Valid Parentheses",
@@ -3760,7 +3760,7 @@
       }
     ],
     "companyTagStats": null,
-    "stats": "{\"totalAccepted\": \"1.1M\", \"totalSubmission\": \"2.9M\", \"totalAcceptedRaw\": 1116514, \"totalSubmissionRaw\": 2874540, \"acRate\": \"38.8%\"}"
+    "stats": "{\"totalAccepted\": \"1.1M\", \"totalSubmission\": \"2.9M\", \"totalAcceptedRaw\": 1116525, \"totalSubmissionRaw\": 2874553, \"acRate\": \"38.8%\"}"
   },
   "search-in-rotated-sorted-array": {
     "title": "Search in Rotated Sorted Array",
@@ -3876,7 +3876,7 @@
       }
     ],
     "companyTagStats": null,
-    "stats": "{\"totalAccepted\": \"4.6M\", \"totalSubmission\": \"10.2M\", \"totalAcceptedRaw\": 4583318, \"totalSubmissionRaw\": 10200841, \"acRate\": \"44.9%\"}"
+    "stats": "{\"totalAccepted\": \"4.6M\", \"totalSubmission\": \"10.2M\", \"totalAcceptedRaw\": 4583373, \"totalSubmissionRaw\": 10200977, \"acRate\": \"44.9%\"}"
   },
   "find-first-and-last-position-of-element-in-sorted-array": {
     "title": "Find First and Last Position of Element in Sorted Array",
@@ -3992,7 +3992,7 @@
       }
     ],
     "companyTagStats": null,
-    "stats": "{\"totalAccepted\": \"3.3M\", \"totalSubmission\": \"6.8M\", \"totalAcceptedRaw\": 3348814, \"totalSubmissionRaw\": 6844025, \"acRate\": \"48.9%\"}"
+    "stats": "{\"totalAccepted\": \"3.3M\", \"totalSubmission\": \"6.8M\", \"totalAcceptedRaw\": 3348872, \"totalSubmissionRaw\": 6844105, \"acRate\": \"48.9%\"}"
   },
   "search-insert-position": {
     "title": "Search Insert Position",
@@ -4108,7 +4108,7 @@
       }
     ],
     "companyTagStats": null,
-    "stats": "{\"totalAccepted\": \"4.8M\", \"totalSubmission\": \"9.3M\", \"totalAcceptedRaw\": 4788029, \"totalSubmissionRaw\": 9332042, \"acRate\": \"51.3%\"}"
+    "stats": "{\"totalAccepted\": \"4.8M\", \"totalSubmission\": \"9.3M\", \"totalAcceptedRaw\": 4788079, \"totalSubmissionRaw\": 9332119, \"acRate\": \"51.3%\"}"
   },
   "valid-sudoku": {
     "title": "Valid Sudoku",
@@ -4228,7 +4228,7 @@
       }
     ],
     "companyTagStats": null,
-    "stats": "{\"totalAccepted\": \"2.5M\", \"totalSubmission\": \"3.9M\", \"totalAcceptedRaw\": 2510891, \"totalSubmissionRaw\": 3889819, \"acRate\": \"64.6%\"}"
+    "stats": "{\"totalAccepted\": \"2.5M\", \"totalSubmission\": \"3.9M\", \"totalAcceptedRaw\": 2510915, \"totalSubmissionRaw\": 3889847, \"acRate\": \"64.6%\"}"
   },
   "sudoku-solver": {
     "title": "Sudoku Solver",
@@ -4340,7 +4340,7 @@
       }
     ],
     "companyTagStats": null,
-    "stats": "{\"totalAccepted\": \"1M\", \"totalSubmission\": \"1.6M\", \"totalAcceptedRaw\": 1046551, \"totalSubmissionRaw\": 1598238, \"acRate\": \"65.5%\"}"
+    "stats": "{\"totalAccepted\": \"1M\", \"totalSubmission\": \"1.6M\", \"totalAcceptedRaw\": 1046562, \"totalSubmissionRaw\": 1598254, \"acRate\": \"65.5%\"}"
   },
   "count-and-say": {
     "title": "Count and Say",
@@ -4456,7 +4456,7 @@
       }
     ],
     "companyTagStats": null,
-    "stats": "{\"totalAccepted\": \"1.4M\", \"totalSubmission\": \"2.3M\", \"totalAcceptedRaw\": 1426372, \"totalSubmissionRaw\": 2266873, \"acRate\": \"62.9%\"}"
+    "stats": "{\"totalAccepted\": \"1.4M\", \"totalSubmission\": \"2.3M\", \"totalAcceptedRaw\": 1426382, \"totalSubmissionRaw\": 2266886, \"acRate\": \"62.9%\"}"
   },
   "combination-sum": {
     "title": "Combination Sum",
@@ -4572,7 +4572,7 @@
       }
     ],
     "companyTagStats": null,
-    "stats": "{\"totalAccepted\": \"3.2M\", \"totalSubmission\": \"4.1M\", \"totalAcceptedRaw\": 3170971, \"totalSubmissionRaw\": 4141863, \"acRate\": \"76.6%\"}"
+    "stats": "{\"totalAccepted\": \"3.2M\", \"totalSubmission\": \"4.1M\", \"totalAcceptedRaw\": 3171003, \"totalSubmissionRaw\": 4141898, \"acRate\": \"76.6%\"}"
   },
   "combination-sum-ii": {
     "title": "Combination Sum II",
@@ -4688,7 +4688,7 @@
       }
     ],
     "companyTagStats": null,
-    "stats": "{\"totalAccepted\": \"1.7M\", \"totalSubmission\": \"2.9M\", \"totalAcceptedRaw\": 1723709, \"totalSubmissionRaw\": 2897361, \"acRate\": \"59.5%\"}"
+    "stats": "{\"totalAccepted\": \"1.7M\", \"totalSubmission\": \"2.9M\", \"totalAcceptedRaw\": 1723732, \"totalSubmissionRaw\": 2897397, \"acRate\": \"59.5%\"}"
   },
   "first-missing-positive": {
     "title": "First Missing Positive",
@@ -4808,7 +4808,7 @@
       }
     ],
     "companyTagStats": null,
-    "stats": "{\"totalAccepted\": \"1.8M\", \"totalSubmission\": \"4.1M\", \"totalAcceptedRaw\": 1770675, \"totalSubmissionRaw\": 4122750, \"acRate\": \"42.9%\"}"
+    "stats": "{\"totalAccepted\": \"1.8M\", \"totalSubmission\": \"4.1M\", \"totalAcceptedRaw\": 1770699, \"totalSubmissionRaw\": 4122790, \"acRate\": \"42.9%\"}"
   },
   "trapping-rain-water": {
     "title": "Trapping Rain Water",
@@ -4936,7 +4936,7 @@
       }
     ],
     "companyTagStats": null,
-    "stats": "{\"totalAccepted\": \"3.6M\", \"totalSubmission\": \"5.3M\", \"totalAcceptedRaw\": 3586696, \"totalSubmissionRaw\": 5321503, \"acRate\": \"67.4%\"}"
+    "stats": "{\"totalAccepted\": \"3.6M\", \"totalSubmission\": \"5.3M\", \"totalAcceptedRaw\": 3586742, \"totalSubmissionRaw\": 5321566, \"acRate\": \"67.4%\"}"
   },
   "multiply-strings": {
     "title": "Multiply Strings",
@@ -5056,7 +5056,7 @@
       }
     ],
     "companyTagStats": null,
-    "stats": "{\"totalAccepted\": \"1.2M\", \"totalSubmission\": \"2.7M\", \"totalAcceptedRaw\": 1172727, \"totalSubmissionRaw\": 2653965, \"acRate\": \"44.2%\"}"
+    "stats": "{\"totalAccepted\": \"1.2M\", \"totalSubmission\": \"2.7M\", \"totalAcceptedRaw\": 1172738, \"totalSubmissionRaw\": 2653983, \"acRate\": \"44.2%\"}"
   },
   "wildcard-matching": {
     "title": "Wildcard Matching",
@@ -5180,7 +5180,7 @@
       }
     ],
     "companyTagStats": null,
-    "stats": "{\"totalAccepted\": \"883.3K\", \"totalSubmission\": \"2.8M\", \"totalAcceptedRaw\": 883327, \"totalSubmissionRaw\": 2759006, \"acRate\": \"32.0%\"}"
+    "stats": "{\"totalAccepted\": \"883.3K\", \"totalSubmission\": \"2.8M\", \"totalAcceptedRaw\": 883336, \"totalSubmissionRaw\": 2759032, \"acRate\": \"32.0%\"}"
   },
   "jump-game-ii": {
     "title": "Jump Game II",
@@ -5300,7 +5300,7 @@
       }
     ],
     "companyTagStats": null,
-    "stats": "{\"totalAccepted\": \"2.2M\", \"totalSubmission\": \"5.1M\", \"totalAcceptedRaw\": 2167198, \"totalSubmissionRaw\": 5050651, \"acRate\": \"42.9%\"}"
+    "stats": "{\"totalAccepted\": \"2.2M\", \"totalSubmission\": \"5.1M\", \"totalAcceptedRaw\": 2167212, \"totalSubmissionRaw\": 5050694, \"acRate\": \"42.9%\"}"
   },
   "permutations": {
     "title": "Permutations",
@@ -5416,7 +5416,7 @@
       }
     ],
     "companyTagStats": null,
-    "stats": "{\"totalAccepted\": \"3.1M\", \"totalSubmission\": \"3.8M\", \"totalAcceptedRaw\": 3113107, \"totalSubmissionRaw\": 3799124, \"acRate\": \"81.9%\"}"
+    "stats": "{\"totalAccepted\": \"3.1M\", \"totalSubmission\": \"3.8M\", \"totalAcceptedRaw\": 3113127, \"totalSubmissionRaw\": 3799144, \"acRate\": \"81.9%\"}"
   },
   "permutations-ii": {
     "title": "Permutations II",
@@ -5536,7 +5536,7 @@
       }
     ],
     "companyTagStats": null,
-    "stats": "{\"totalAccepted\": \"1.3M\", \"totalSubmission\": \"2M\", \"totalAcceptedRaw\": 1300240, \"totalSubmissionRaw\": 2048421, \"acRate\": \"63.5%\"}"
+    "stats": "{\"totalAccepted\": \"1.3M\", \"totalSubmission\": \"2M\", \"totalAcceptedRaw\": 1300250, \"totalSubmissionRaw\": 2048439, \"acRate\": \"63.5%\"}"
   },
   "rotate-image": {
     "title": "Rotate Image",
@@ -5641,7 +5641,7 @@
       }
     ],
     "companyTagStats": null,
-    "stats": "{\"totalAccepted\": \"2.9M\", \"totalSubmission\": \"3.7M\", \"totalAcceptedRaw\": 2938340, \"totalSubmissionRaw\": 3667402, \"acRate\": \"80.1%\"}"
+    "stats": "{\"totalAccepted\": \"2.9M\", \"totalSubmission\": \"3.7M\", \"totalAcceptedRaw\": 2938380, \"totalSubmissionRaw\": 3667444, \"acRate\": \"80.1%\"}"
   },
   "group-anagrams": {
     "title": "Group Anagrams",
@@ -5765,7 +5765,7 @@
       }
     ],
     "companyTagStats": null,
-    "stats": "{\"totalAccepted\": \"4.8M\", \"totalSubmission\": \"6.6M\", \"totalAcceptedRaw\": 4791471, \"totalSubmissionRaw\": 6596350, \"acRate\": \"72.6%\"}"
+    "stats": "{\"totalAccepted\": \"4.8M\", \"totalSubmission\": \"6.6M\", \"totalAcceptedRaw\": 4791528, \"totalSubmissionRaw\": 6596411, \"acRate\": \"72.6%\"}"
   },
   "powx-n": {
     "title": "Pow(x, n)",
@@ -5881,7 +5881,7 @@
       }
     ],
     "companyTagStats": null,
-    "stats": "{\"totalAccepted\": \"2.7M\", \"totalSubmission\": \"7.1M\", \"totalAcceptedRaw\": 2734487, \"totalSubmissionRaw\": 7068502, \"acRate\": \"38.7%\"}"
+    "stats": "{\"totalAccepted\": \"2.7M\", \"totalSubmission\": \"7.1M\", \"totalAcceptedRaw\": 2734532, \"totalSubmissionRaw\": 7068602, \"acRate\": \"38.7%\"}"
   },
   "n-queens": {
     "title": "N-Queens",
@@ -5997,7 +5997,7 @@
       }
     ],
     "companyTagStats": null,
-    "stats": "{\"totalAccepted\": \"1.3M\", \"totalSubmission\": \"1.7M\", \"totalAcceptedRaw\": 1292302, \"totalSubmissionRaw\": 1709731, \"acRate\": \"75.6%\"}"
+    "stats": "{\"totalAccepted\": \"1.3M\", \"totalSubmission\": \"1.7M\", \"totalAcceptedRaw\": 1292340, \"totalSubmissionRaw\": 1709770, \"acRate\": \"75.6%\"}"
   },
   "n-queens-ii": {
     "title": "N-Queens II",
@@ -6109,7 +6109,7 @@
       }
     ],
     "companyTagStats": null,
-    "stats": "{\"totalAccepted\": \"608.9K\", \"totalSubmission\": \"773.7K\", \"totalAcceptedRaw\": 608899, \"totalSubmissionRaw\": 773711, \"acRate\": \"78.7%\"}"
+    "stats": "{\"totalAccepted\": \"608.9K\", \"totalSubmission\": \"773.7K\", \"totalAcceptedRaw\": 608908, \"totalSubmissionRaw\": 773721, \"acRate\": \"78.7%\"}"
   },
   "maximum-subarray": {
     "title": "Maximum Subarray",
@@ -6229,7 +6229,7 @@
       }
     ],
     "companyTagStats": null,
-    "stats": "{\"totalAccepted\": \"6.2M\", \"totalSubmission\": \"11.5M\", \"totalAcceptedRaw\": 6157963, \"totalSubmissionRaw\": 11544552, \"acRate\": \"53.3%\"}"
+    "stats": "{\"totalAccepted\": \"6.2M\", \"totalSubmission\": \"11.5M\", \"totalAcceptedRaw\": 6158014, \"totalSubmissionRaw\": 11544657, \"acRate\": \"53.3%\"}"
   },
   "spiral-matrix": {
     "title": "Spiral Matrix",
@@ -6353,7 +6353,7 @@
       }
     ],
     "companyTagStats": null,
-    "stats": "{\"totalAccepted\": \"2.4M\", \"totalSubmission\": \"4.2M\", \"totalAcceptedRaw\": 2414010, \"totalSubmissionRaw\": 4247727, \"acRate\": \"56.8%\"}"
+    "stats": "{\"totalAccepted\": \"2.4M\", \"totalSubmission\": \"4.2M\", \"totalAcceptedRaw\": 2414033, \"totalSubmissionRaw\": 4247758, \"acRate\": \"56.8%\"}"
   },
   "jump-game": {
     "title": "Jump Game",
@@ -6473,7 +6473,7 @@
       }
     ],
     "companyTagStats": null,
-    "stats": "{\"totalAccepted\": \"3.2M\", \"totalSubmission\": \"7.9M\", \"totalAcceptedRaw\": 3228074, \"totalSubmissionRaw\": 7887454, \"acRate\": \"40.9%\"}"
+    "stats": "{\"totalAccepted\": \"3.2M\", \"totalSubmission\": \"7.9M\", \"totalAcceptedRaw\": 3228099, \"totalSubmissionRaw\": 7887521, \"acRate\": \"40.9%\"}"
   },
   "merge-intervals": {
     "title": "Merge Intervals",
@@ -6589,7 +6589,7 @@
       }
     ],
     "companyTagStats": null,
-    "stats": "{\"totalAccepted\": \"4M\", \"totalSubmission\": \"7.8M\", \"totalAcceptedRaw\": 4037970, \"totalSubmissionRaw\": 7785138, \"acRate\": \"51.9%\"}"
+    "stats": "{\"totalAccepted\": \"4M\", \"totalSubmission\": \"7.8M\", \"totalAcceptedRaw\": 4038018, \"totalSubmissionRaw\": 7785207, \"acRate\": \"51.9%\"}"
   },
   "insert-interval": {
     "title": "Insert Interval",
@@ -6705,7 +6705,7 @@
       }
     ],
     "companyTagStats": null,
-    "stats": "{\"totalAccepted\": \"1.8M\", \"totalSubmission\": \"4M\", \"totalAcceptedRaw\": 1795232, \"totalSubmissionRaw\": 3967336, \"acRate\": \"45.3%\"}"
+    "stats": "{\"totalAccepted\": \"1.8M\", \"totalSubmission\": \"4M\", \"totalAcceptedRaw\": 1795251, \"totalSubmissionRaw\": 3967377, \"acRate\": \"45.3%\"}"
   },
   "length-of-last-word": {
     "title": "Length of Last Word",
@@ -6817,7 +6817,7 @@
       }
     ],
     "companyTagStats": null,
-    "stats": "{\"totalAccepted\": \"3.4M\", \"totalSubmission\": \"5.9M\", \"totalAcceptedRaw\": 3445657, \"totalSubmissionRaw\": 5854047, \"acRate\": \"58.9%\"}"
+    "stats": "{\"totalAccepted\": \"3.4M\", \"totalSubmission\": \"5.9M\", \"totalAcceptedRaw\": 3445740, \"totalSubmissionRaw\": 5854143, \"acRate\": \"58.9%\"}"
   },
   "spiral-matrix-ii": {
     "title": "Spiral Matrix II",
@@ -6937,7 +6937,7 @@
       }
     ],
     "companyTagStats": null,
-    "stats": "{\"totalAccepted\": \"812.3K\", \"totalSubmission\": \"1.1M\", \"totalAcceptedRaw\": 812272, \"totalSubmissionRaw\": 1081826, \"acRate\": \"75.1%\"}"
+    "stats": "{\"totalAccepted\": \"812.3K\", \"totalSubmission\": \"1.1M\", \"totalAcceptedRaw\": 812277, \"totalSubmissionRaw\": 1081832, \"acRate\": \"75.1%\"}"
   },
   "permutation-sequence": {
     "title": "Permutation Sequence",
@@ -7053,7 +7053,7 @@
       }
     ],
     "companyTagStats": null,
-    "stats": "{\"totalAccepted\": \"584K\", \"totalSubmission\": \"1.1M\", \"totalAcceptedRaw\": 584035, \"totalSubmissionRaw\": 1099104, \"acRate\": \"53.1%\"}"
+    "stats": "{\"totalAccepted\": \"584K\", \"totalSubmission\": \"1.1M\", \"totalAcceptedRaw\": 584044, \"totalSubmissionRaw\": 1099115, \"acRate\": \"53.1%\"}"
   },
   "rotate-list": {
     "title": "Rotate List",
@@ -7169,7 +7169,7 @@
       }
     ],
     "companyTagStats": null,
-    "stats": "{\"totalAccepted\": \"1.7M\", \"totalSubmission\": \"4M\", \"totalAcceptedRaw\": 1724185, \"totalSubmissionRaw\": 4047349, \"acRate\": \"42.6%\"}"
+    "stats": "{\"totalAccepted\": \"1.7M\", \"totalSubmission\": \"4M\", \"totalAcceptedRaw\": 1724205, \"totalSubmissionRaw\": 4047384, \"acRate\": \"42.6%\"}"
   },
   "unique-paths": {
     "title": "Unique Paths",
@@ -7289,7 +7289,7 @@
       }
     ],
     "companyTagStats": null,
-    "stats": "{\"totalAccepted\": \"2.9M\", \"totalSubmission\": \"4.3M\", \"totalAcceptedRaw\": 2854662, \"totalSubmissionRaw\": 4269684, \"acRate\": \"66.9%\"}"
+    "stats": "{\"totalAccepted\": \"2.9M\", \"totalSubmission\": \"4.3M\", \"totalAcceptedRaw\": 2854692, \"totalSubmissionRaw\": 4269719, \"acRate\": \"66.9%\"}"
   },
   "unique-paths-ii": {
     "title": "Unique Paths II",
@@ -7412,7 +7412,7 @@
       }
     ],
     "companyTagStats": null,
-    "stats": "{\"totalAccepted\": \"1.5M\", \"totalSubmission\": \"3.4M\", \"totalAcceptedRaw\": 1500232, \"totalSubmissionRaw\": 3370283, \"acRate\": \"44.5%\"}"
+    "stats": "{\"totalAccepted\": \"1.5M\", \"totalSubmission\": \"3.4M\", \"totalAcceptedRaw\": 1500256, \"totalSubmissionRaw\": 3370327, \"acRate\": \"44.5%\"}"
   },
   "minimum-path-sum": {
     "title": "Minimum Path Sum",
@@ -7532,7 +7532,7 @@
       }
     ],
     "companyTagStats": null,
-    "stats": "{\"totalAccepted\": \"1.9M\", \"totalSubmission\": \"2.7M\", \"totalAcceptedRaw\": 1870457, \"totalSubmissionRaw\": 2740142, \"acRate\": \"68.3%\"}"
+    "stats": "{\"totalAccepted\": \"1.9M\", \"totalSubmission\": \"2.7M\", \"totalAcceptedRaw\": 1870497, \"totalSubmissionRaw\": 2740188, \"acRate\": \"68.3%\"}"
   },
   "valid-number": {
     "title": "Valid Number",
@@ -7644,7 +7644,7 @@
       }
     ],
     "companyTagStats": null,
-    "stats": "{\"totalAccepted\": \"523.9K\", \"totalSubmission\": \"2.3M\", \"totalAcceptedRaw\": 523871, \"totalSubmissionRaw\": 2275660, \"acRate\": \"23.0%\"}"
+    "stats": "{\"totalAccepted\": \"523.9K\", \"totalSubmission\": \"2.3M\", \"totalAcceptedRaw\": 523874, \"totalSubmissionRaw\": 2275668, \"acRate\": \"23.0%\"}"
   },
   "plus-one": {
     "title": "Plus One",
@@ -7760,7 +7760,7 @@
       }
     ],
     "companyTagStats": null,
-    "stats": "{\"totalAccepted\": \"3.8M\", \"totalSubmission\": \"7.5M\", \"totalAcceptedRaw\": 3762893, \"totalSubmissionRaw\": 7528159, \"acRate\": \"50.0%\"}"
+    "stats": "{\"totalAccepted\": \"3.8M\", \"totalSubmission\": \"7.5M\", \"totalAcceptedRaw\": 3762931, \"totalSubmissionRaw\": 7528223, \"acRate\": \"50.0%\"}"
   },
   "add-binary": {
     "title": "Add Binary",
@@ -7884,7 +7884,7 @@
       }
     ],
     "companyTagStats": null,
-    "stats": "{\"totalAccepted\": \"2.4M\", \"totalSubmission\": \"4.1M\", \"totalAcceptedRaw\": 2360176, \"totalSubmissionRaw\": 4064401, \"acRate\": \"58.1%\"}"
+    "stats": "{\"totalAccepted\": \"2.4M\", \"totalSubmission\": \"4.1M\", \"totalAcceptedRaw\": 2360194, \"totalSubmissionRaw\": 4064425, \"acRate\": \"58.1%\"}"
   },
   "text-justification": {
     "title": "Text Justification",
@@ -8004,7 +8004,7 @@
       }
     ],
     "companyTagStats": null,
-    "stats": "{\"totalAccepted\": \"658.6K\", \"totalSubmission\": \"1.3M\", \"totalAcceptedRaw\": 658577, \"totalSubmissionRaw\": 1286616, \"acRate\": \"51.2%\"}"
+    "stats": "{\"totalAccepted\": \"658.6K\", \"totalSubmission\": \"1.3M\", \"totalAcceptedRaw\": 658580, \"totalSubmissionRaw\": 1286619, \"acRate\": \"51.2%\"}"
   },
   "sqrtx": {
     "title": "Sqrt(x)",
@@ -8123,7 +8123,7 @@
       }
     ],
     "companyTagStats": null,
-    "stats": "{\"totalAccepted\": \"3.2M\", \"totalSubmission\": \"7.7M\", \"totalAcceptedRaw\": 3217915, \"totalSubmissionRaw\": 7692397, \"acRate\": \"41.8%\"}"
+    "stats": "{\"totalAccepted\": \"3.2M\", \"totalSubmission\": \"7.7M\", \"totalAcceptedRaw\": 3217939, \"totalSubmissionRaw\": 7692444, \"acRate\": \"41.8%\"}"
   },
   "climbing-stairs": {
     "title": "Climbing Stairs",
@@ -8245,7 +8245,7 @@
       }
     ],
     "companyTagStats": null,
-    "stats": "{\"totalAccepted\": \"5.2M\", \"totalSubmission\": \"9.6M\", \"totalAcceptedRaw\": 5168886, \"totalSubmissionRaw\": 9553732, \"acRate\": \"54.1%\"}"
+    "stats": "{\"totalAccepted\": \"5.2M\", \"totalSubmission\": \"9.6M\", \"totalAcceptedRaw\": 5168939, \"totalSubmissionRaw\": 9553826, \"acRate\": \"54.1%\"}"
   },
   "simplify-path": {
     "title": "Simplify Path",
@@ -8361,7 +8361,7 @@
       }
     ],
     "companyTagStats": null,
-    "stats": "{\"totalAccepted\": \"1.3M\", \"totalSubmission\": \"2.6M\", \"totalAcceptedRaw\": 1338053, \"totalSubmissionRaw\": 2643283, \"acRate\": \"50.6%\"}"
+    "stats": "{\"totalAccepted\": \"1.3M\", \"totalSubmission\": \"2.6M\", \"totalAcceptedRaw\": 1338067, \"totalSubmissionRaw\": 2643307, \"acRate\": \"50.6%\"}"
   },
   "edit-distance": {
     "title": "Edit Distance",
@@ -8477,7 +8477,7 @@
       }
     ],
     "companyTagStats": null,
-    "stats": "{\"totalAccepted\": \"1.5M\", \"totalSubmission\": \"2.4M\", \"totalAcceptedRaw\": 1472605, \"totalSubmissionRaw\": 2428674, \"acRate\": \"60.6%\"}"
+    "stats": "{\"totalAccepted\": \"1.5M\", \"totalSubmission\": \"2.4M\", \"totalAcceptedRaw\": 1472628, \"totalSubmissionRaw\": 2428702, \"acRate\": \"60.6%\"}"
   },
   "set-matrix-zeroes": {
     "title": "Set Matrix Zeroes",
@@ -8587,7 +8587,7 @@
       }
     ],
     "companyTagStats": null,
-    "stats": "{\"totalAccepted\": \"2.6M\", \"totalSubmission\": \"4.1M\", \"totalAcceptedRaw\": 2605232, \"totalSubmissionRaw\": 4139244, \"acRate\": \"62.9%\"}"
+    "stats": "{\"totalAccepted\": \"2.6M\", \"totalSubmission\": \"4.1M\", \"totalAcceptedRaw\": 2605262, \"totalSubmissionRaw\": 4139280, \"acRate\": \"62.9%\"}"
   },
   "search-a-2d-matrix": {
     "title": "Search a 2D Matrix",
@@ -8707,7 +8707,7 @@
       }
     ],
     "companyTagStats": null,
-    "stats": "{\"totalAccepted\": \"2.9M\", \"totalSubmission\": \"5.4M\", \"totalAcceptedRaw\": 2912380, \"totalSubmissionRaw\": 5397135, \"acRate\": \"54.0%\"}"
+    "stats": "{\"totalAccepted\": \"2.9M\", \"totalSubmission\": \"5.4M\", \"totalAcceptedRaw\": 2912410, \"totalSubmissionRaw\": 5397185, \"acRate\": \"54.0%\"}"
   },
   "sort-colors": {
     "title": "Sort Colors",
@@ -8816,7 +8816,7 @@
       }
     ],
     "companyTagStats": null,
-    "stats": "{\"totalAccepted\": \"3.8M\", \"totalSubmission\": \"5.4M\", \"totalAcceptedRaw\": 3780676, \"totalSubmissionRaw\": 5427162, \"acRate\": \"69.7%\"}"
+    "stats": "{\"totalAccepted\": \"3.8M\", \"totalSubmission\": \"5.4M\", \"totalAcceptedRaw\": 3780746, \"totalSubmissionRaw\": 5427252, \"acRate\": \"69.7%\"}"
   },
   "minimum-window-substring": {
     "title": "Minimum Window Substring",
@@ -8941,7 +8941,7 @@
       }
     ],
     "companyTagStats": null,
-    "stats": "{\"totalAccepted\": \"2.2M\", \"totalSubmission\": \"4.6M\", \"totalAcceptedRaw\": 2186722, \"totalSubmissionRaw\": 4596000, \"acRate\": \"47.6%\"}"
+    "stats": "{\"totalAccepted\": \"2.2M\", \"totalSubmission\": \"4.6M\", \"totalAcceptedRaw\": 2186767, \"totalSubmissionRaw\": 4596089, \"acRate\": \"47.6%\"}"
   },
   "combinations": {
     "title": "Combinations",
@@ -9053,7 +9053,7 @@
       }
     ],
     "companyTagStats": null,
-    "stats": "{\"totalAccepted\": \"1.3M\", \"totalSubmission\": \"1.8M\", \"totalAcceptedRaw\": 1347501, \"totalSubmissionRaw\": 1806260, \"acRate\": \"74.6%\"}"
+    "stats": "{\"totalAccepted\": \"1.3M\", \"totalSubmission\": \"1.8M\", \"totalAcceptedRaw\": 1347519, \"totalSubmissionRaw\": 1806284, \"acRate\": \"74.6%\"}"
   },
   "subsets": {
     "title": "Subsets",
@@ -9173,7 +9173,7 @@
       }
     ],
     "companyTagStats": null,
-    "stats": "{\"totalAccepted\": \"3.1M\", \"totalSubmission\": \"3.7M\", \"totalAcceptedRaw\": 3067056, \"totalSubmissionRaw\": 3723882, \"acRate\": \"82.4%\"}"
+    "stats": "{\"totalAccepted\": \"3.1M\", \"totalSubmission\": \"3.7M\", \"totalAcceptedRaw\": 3067085, \"totalSubmissionRaw\": 3723914, \"acRate\": \"82.4%\"}"
   },
   "word-search": {
     "title": "Word Search",
@@ -9301,7 +9301,7 @@
       }
     ],
     "companyTagStats": null,
-    "stats": "{\"totalAccepted\": \"2.5M\", \"totalSubmission\": \"5.3M\", \"totalAcceptedRaw\": 2523257, \"totalSubmissionRaw\": 5322297, \"acRate\": \"47.4%\"}"
+    "stats": "{\"totalAccepted\": \"2.5M\", \"totalSubmission\": \"5.3M\", \"totalAcceptedRaw\": 2523293, \"totalSubmissionRaw\": 5322353, \"acRate\": \"47.4%\"}"
   },
   "remove-duplicates-from-sorted-array-ii": {
     "title": "Remove Duplicates from Sorted Array II",
@@ -9402,7 +9402,7 @@
       }
     ],
     "companyTagStats": null,
-    "stats": "{\"totalAccepted\": \"2M\", \"totalSubmission\": \"3M\", \"totalAcceptedRaw\": 1956302, \"totalSubmissionRaw\": 3022198, \"acRate\": \"64.7%\"}"
+    "stats": "{\"totalAccepted\": \"2M\", \"totalSubmission\": \"3M\", \"totalAcceptedRaw\": 1956331, \"totalSubmissionRaw\": 3022244, \"acRate\": \"64.7%\"}"
   },
   "search-in-rotated-sorted-array-ii": {
     "title": "Search in Rotated Sorted Array II",
@@ -9518,7 +9518,7 @@
       }
     ],
     "companyTagStats": null,
-    "stats": "{\"totalAccepted\": \"1.3M\", \"totalSubmission\": \"3.1M\", \"totalAcceptedRaw\": 1256294, \"totalSubmissionRaw\": 3134899, \"acRate\": \"40.1%\"}"
+    "stats": "{\"totalAccepted\": \"1.3M\", \"totalSubmission\": \"3.1M\", \"totalAcceptedRaw\": 1256332, \"totalSubmissionRaw\": 3134979, \"acRate\": \"40.1%\"}"
   },
   "remove-duplicates-from-sorted-list-ii": {
     "title": "Remove Duplicates from Sorted List II",
@@ -9634,7 +9634,7 @@
       }
     ],
     "companyTagStats": null,
-    "stats": "{\"totalAccepted\": \"1.1M\", \"totalSubmission\": \"2.1M\", \"totalAcceptedRaw\": 1110171, \"totalSubmissionRaw\": 2142203, \"acRate\": \"51.8%\"}"
+    "stats": "{\"totalAccepted\": \"1.1M\", \"totalSubmission\": \"2.1M\", \"totalAcceptedRaw\": 1110186, \"totalSubmissionRaw\": 2142240, \"acRate\": \"51.8%\"}"
   },
   "remove-duplicates-from-sorted-list": {
     "title": "Remove Duplicates from Sorted List",
@@ -9746,7 +9746,7 @@
       }
     ],
     "companyTagStats": null,
-    "stats": "{\"totalAccepted\": \"2.4M\", \"totalSubmission\": \"4.2M\", \"totalAcceptedRaw\": 2398543, \"totalSubmissionRaw\": 4225447, \"acRate\": \"56.8%\"}"
+    "stats": "{\"totalAccepted\": \"2.4M\", \"totalSubmission\": \"4.2M\", \"totalAcceptedRaw\": 2398561, \"totalSubmissionRaw\": 4225483, \"acRate\": \"56.8%\"}"
   },
   "largest-rectangle-in-histogram": {
     "title": "Largest Rectangle in Histogram",
@@ -9866,7 +9866,7 @@
       }
     ],
     "companyTagStats": null,
-    "stats": "{\"totalAccepted\": \"1.6M\", \"totalSubmission\": \"3.2M\", \"totalAcceptedRaw\": 1581550, \"totalSubmissionRaw\": 3166825, \"acRate\": \"49.9%\"}"
+    "stats": "{\"totalAccepted\": \"1.6M\", \"totalSubmission\": \"3.2M\", \"totalAcceptedRaw\": 1581576, \"totalSubmissionRaw\": 3166875, \"acRate\": \"49.9%\"}"
   },
   "maximal-rectangle": {
     "title": "Maximal Rectangle",
@@ -9994,7 +9994,7 @@
       }
     ],
     "companyTagStats": null,
-    "stats": "{\"totalAccepted\": \"813.3K\", \"totalSubmission\": \"1.4M\", \"totalAcceptedRaw\": 813314, \"totalSubmissionRaw\": 1383199, \"acRate\": \"58.8%\"}"
+    "stats": "{\"totalAccepted\": \"813.3K\", \"totalSubmission\": \"1.4M\", \"totalAcceptedRaw\": 813333, \"totalSubmissionRaw\": 1383223, \"acRate\": \"58.8%\"}"
   },
   "partition-list": {
     "title": "Partition List",
@@ -10110,7 +10110,7 @@
       }
     ],
     "companyTagStats": null,
-    "stats": "{\"totalAccepted\": \"917.9K\", \"totalSubmission\": \"1.5M\", \"totalAcceptedRaw\": 917931, \"totalSubmissionRaw\": 1499699, \"acRate\": \"61.2%\"}"
+    "stats": "{\"totalAccepted\": \"917.9K\", \"totalSubmission\": \"1.5M\", \"totalAcceptedRaw\": 917948, \"totalSubmissionRaw\": 1499718, \"acRate\": \"61.2%\"}"
   },
   "scramble-string": {
     "title": "Scramble String",
@@ -10226,7 +10226,7 @@
       }
     ],
     "companyTagStats": null,
-    "stats": "{\"totalAccepted\": \"319.8K\", \"totalSubmission\": \"716.4K\", \"totalAcceptedRaw\": 319771, \"totalSubmissionRaw\": 716442, \"acRate\": \"44.6%\"}"
+    "stats": "{\"totalAccepted\": \"319.8K\", \"totalSubmission\": \"716.4K\", \"totalAcceptedRaw\": 319775, \"totalSubmissionRaw\": 716448, \"acRate\": \"44.6%\"}"
   },
   "merge-sorted-array": {
     "title": "Merge Sorted Array",
@@ -10334,7 +10334,7 @@
       }
     ],
     "companyTagStats": null,
-    "stats": "{\"totalAccepted\": \"5.7M\", \"totalSubmission\": \"10.4M\", \"totalAcceptedRaw\": 5731119, \"totalSubmissionRaw\": 10441825, \"acRate\": \"54.9%\"}"
+    "stats": "{\"totalAccepted\": \"5.7M\", \"totalSubmission\": \"10.4M\", \"totalAcceptedRaw\": 5731195, \"totalSubmissionRaw\": 10441921, \"acRate\": \"54.9%\"}"
   },
   "gray-code": {
     "title": "Gray Code",
@@ -10454,7 +10454,7 @@
       }
     ],
     "companyTagStats": null,
-    "stats": "{\"totalAccepted\": \"429.7K\", \"totalSubmission\": \"661.4K\", \"totalAcceptedRaw\": 429657, \"totalSubmissionRaw\": 661392, \"acRate\": \"65.0%\"}"
+    "stats": "{\"totalAccepted\": \"429.7K\", \"totalSubmission\": \"661.4K\", \"totalAcceptedRaw\": 429660, \"totalSubmissionRaw\": 661397, \"acRate\": \"65.0%\"}"
   },
   "subsets-ii": {
     "title": "Subsets II",
@@ -10574,7 +10574,7 @@
       }
     ],
     "companyTagStats": null,
-    "stats": "{\"totalAccepted\": \"1.5M\", \"totalSubmission\": \"2.5M\", \"totalAcceptedRaw\": 1511619, \"totalSubmissionRaw\": 2464913, \"acRate\": \"61.3%\"}"
+    "stats": "{\"totalAccepted\": \"1.5M\", \"totalSubmission\": \"2.5M\", \"totalAcceptedRaw\": 1511641, \"totalSubmissionRaw\": 2464949, \"acRate\": \"61.3%\"}"
   },
   "decode-ways": {
     "title": "Decode Ways",
@@ -10690,7 +10690,7 @@
       }
     ],
     "companyTagStats": null,
-    "stats": "{\"totalAccepted\": \"1.7M\", \"totalSubmission\": \"4.4M\", \"totalAcceptedRaw\": 1669374, \"totalSubmissionRaw\": 4391444, \"acRate\": \"38.0%\"}"
+    "stats": "{\"totalAccepted\": \"1.7M\", \"totalSubmission\": \"4.4M\", \"totalAcceptedRaw\": 1669391, \"totalSubmissionRaw\": 4391475, \"acRate\": \"38.0%\"}"
   },
   "reverse-linked-list-ii": {
     "title": "Reverse Linked List II",
@@ -10802,7 +10802,7 @@
       }
     ],
     "companyTagStats": null,
-    "stats": "{\"totalAccepted\": \"1.3M\", \"totalSubmission\": \"2.6M\", \"totalAcceptedRaw\": 1328030, \"totalSubmissionRaw\": 2575703, \"acRate\": \"51.6%\"}"
+    "stats": "{\"totalAccepted\": \"1.3M\", \"totalSubmission\": \"2.6M\", \"totalAcceptedRaw\": 1328035, \"totalSubmissionRaw\": 2575709, \"acRate\": \"51.6%\"}"
   },
   "restore-ip-addresses": {
     "title": "Restore IP Addresses",
@@ -10918,7 +10918,7 @@
       }
     ],
     "companyTagStats": null,
-    "stats": "{\"totalAccepted\": \"632.8K\", \"totalSubmission\": \"1.1M\", \"totalAcceptedRaw\": 632782, \"totalSubmissionRaw\": 1128870, \"acRate\": \"56.1%\"}"
+    "stats": "{\"totalAccepted\": \"632.8K\", \"totalSubmission\": \"1.1M\", \"totalAcceptedRaw\": 632797, \"totalSubmissionRaw\": 1128885, \"acRate\": \"56.1%\"}"
   },
   "binary-tree-inorder-traversal": {
     "title": "Binary Tree Inorder Traversal",
@@ -11042,7 +11042,7 @@
       }
     ],
     "companyTagStats": null,
-    "stats": "{\"totalAccepted\": \"3.7M\", \"totalSubmission\": \"4.7M\", \"totalAcceptedRaw\": 3739040, \"totalSubmissionRaw\": 4668417, \"acRate\": \"80.1%\"}"
+    "stats": "{\"totalAccepted\": \"3.7M\", \"totalSubmission\": \"4.7M\", \"totalAcceptedRaw\": 3739134, \"totalSubmissionRaw\": 4668524, \"acRate\": \"80.1%\"}"
   },
   "unique-binary-search-trees-ii": {
     "title": "Unique Binary Search Trees II",
@@ -11170,7 +11170,7 @@
       }
     ],
     "companyTagStats": null,
-    "stats": "{\"totalAccepted\": \"586.3K\", \"totalSubmission\": \"937.7K\", \"totalAcceptedRaw\": 586344, \"totalSubmissionRaw\": 937743, \"acRate\": \"62.5%\"}"
+    "stats": "{\"totalAccepted\": \"586.3K\", \"totalSubmission\": \"937.7K\", \"totalAcceptedRaw\": 586346, \"totalSubmissionRaw\": 937747, \"acRate\": \"62.5%\"}"
   },
   "unique-binary-search-trees": {
     "title": "Unique Binary Search Trees",
@@ -11298,7 +11298,7 @@
       }
     ],
     "companyTagStats": null,
-    "stats": "{\"totalAccepted\": \"873.4K\", \"totalSubmission\": \"1.4M\", \"totalAcceptedRaw\": 873368, \"totalSubmissionRaw\": 1370427, \"acRate\": \"63.7%\"}"
+    "stats": "{\"totalAccepted\": \"873.4K\", \"totalSubmission\": \"1.4M\", \"totalAcceptedRaw\": 873380, \"totalSubmissionRaw\": 1370439, \"acRate\": \"63.7%\"}"
   },
   "interleaving-string": {
     "title": "Interleaving String",
@@ -11414,7 +11414,7 @@
       }
     ],
     "companyTagStats": null,
-    "stats": "{\"totalAccepted\": \"793.5K\", \"totalSubmission\": \"1.8M\", \"totalAcceptedRaw\": 793532, \"totalSubmissionRaw\": 1800917, \"acRate\": \"44.1%\"}"
+    "stats": "{\"totalAccepted\": \"793.5K\", \"totalSubmission\": \"1.8M\", \"totalAcceptedRaw\": 793536, \"totalSubmissionRaw\": 1800923, \"acRate\": \"44.1%\"}"
   },
   "validate-binary-search-tree": {
     "title": "Validate Binary Search Tree",
@@ -11538,7 +11538,7 @@
       }
     ],
     "companyTagStats": null,
-    "stats": "{\"totalAccepted\": \"3.4M\", \"totalSubmission\": \"9.4M\", \"totalAcceptedRaw\": 3369573, \"totalSubmissionRaw\": 9416217, \"acRate\": \"35.8%\"}"
+    "stats": "{\"totalAccepted\": \"3.4M\", \"totalSubmission\": \"9.4M\", \"totalAcceptedRaw\": 3369595, \"totalSubmissionRaw\": 9416282, \"acRate\": \"35.8%\"}"
   },
   "recover-binary-search-tree": {
     "title": "Recover Binary Search Tree",
@@ -11652,7 +11652,7 @@
       }
     ],
     "companyTagStats": null,
-    "stats": "{\"totalAccepted\": \"675.1K\", \"totalSubmission\": \"1.1M\", \"totalAcceptedRaw\": 675145, \"totalSubmissionRaw\": 1130649, \"acRate\": \"59.7%\"}"
+    "stats": "{\"totalAccepted\": \"675.2K\", \"totalSubmission\": \"1.1M\", \"totalAcceptedRaw\": 675153, \"totalSubmissionRaw\": 1130657, \"acRate\": \"59.7%\"}"
   },
   "same-tree": {
     "title": "Same Tree",
@@ -11776,6 +11776,6 @@
       }
     ],
     "companyTagStats": null,
-    "stats": "{\"totalAccepted\": \"3.4M\", \"totalSubmission\": \"5.1M\", \"totalAcceptedRaw\": 3449893, \"totalSubmissionRaw\": 5135938, \"acRate\": \"67.2%\"}"
+    "stats": "{\"totalAccepted\": \"3.4M\", \"totalSubmission\": \"5.1M\", \"totalAcceptedRaw\": 3449965, \"totalSubmissionRaw\": 5136023, \"acRate\": \"67.2%\"}"
   }
 }
