@@ -42,6 +42,7 @@ CodeArena AI goes beyond traditional coding platforms like LeetCode and HackerRa
 ## 🛠️ Tech Stack
 
 ### Backend (FastAPI Monolith)
+
 - **Language**: Python 3.12+
 - **Framework**: FastAPI (v0.115+) & Uvicorn standard
 - **Database**: Supabase (PostgreSQL with custom DDL schema)
@@ -49,6 +50,7 @@ CodeArena AI goes beyond traditional coding platforms like LeetCode and HackerRa
 - **Package Management**: `uv` or pip
 
 ### Frontend (Next.js App Router)
+
 - **Framework**: Next.js 16.2.6 (React 19.2.4 & TypeScript 5)
 - **Styling**: Tailwind CSS v4 & PostCSS
 - **State Management**: Zustand 5 & TanStack React Query 5
@@ -102,10 +104,13 @@ CodeArena-AI/
 ### FastAPI Backend Setup
 
 1. Navigate to the backend directory:
+
    ```bash
    cd backend
    ```
+
 2. Set up a virtual environment and install dependencies using `uv` (recommended) or pip:
+
    ```bash
    # Using Astral's uv
    uv sync
@@ -115,41 +120,54 @@ CodeArena-AI/
    source .venv/bin/activate
    pip install -r requirements.txt
    ```
+
 3. Create your `.env` configuration file:
+
    ```bash
    cp .env.example .env
    ```
+
 4. Fill in your environment variables inside `.env`:
    - `SUPABASE_URL` & keys (obtained from Supabase API settings)
    - `OPENAI_API_KEY` (obtained from your AI provider)
    - `OPENAI_BASE_URL` (defaults to OpenAI, but can be switched to OpenRouter, Groq, or Together AI)
 5. Start the backend development server:
+
    ```bash
    source .venv/bin/activate
    uvicorn app.main:app --reload --host 127.0.0.1 --port 8000
    ```
+
    - *API Swagger docs are accessible at [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs)*
 
 ### Next.js Frontend Setup
 
 1. Navigate to the frontend directory:
+
    ```bash
    cd frontend
    ```
+
 2. Install npm dependencies:
+
    ```bash
    npm install
    ```
+
 3. Configure your local environment variables in `.env.local` (default file already matches local development):
+
    ```env
    NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
    NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
    NEXT_PUBLIC_API_URL=http://localhost:8000
    ```
+
 4. Run the Next.js development server:
+
    ```bash
    npm run dev
    ```
+
    - *The interface is accessible at [http://localhost:3000](http://localhost:3000)*
 
 ---
@@ -159,11 +177,13 @@ CodeArena-AI/
 CodeArena AI includes an advanced, idempotent seeding pipeline to pull actual problems, starter codes, test cases, and editorial descriptions from LeetCode.
 
 To seed your database with 100 diverse problems:
+
 ```bash
 cd backend
 source .venv/bin/activate
 python -m scripts.seed_problems
 ```
+
 - Estimates typical solve times and structures metadata (company tags, starter code templates for C/C++/Java/Python, markdown descriptions, and incremental hints).
 - Utilizes local file caching (`leetcode_cache.json` and `leetcode_details_cache.json`) to prevent hitting API rate limits during re-runs.
 
@@ -176,6 +196,7 @@ python -m scripts.seed_problems
 The Next.js 16 frontend is fully hostable on **Vercel** and **Netlify** with absolute zero configuration:
 
 #### 🔺 Hosting on Vercel
+
 1. Push your repository to GitHub/GitLab.
 2. In the Vercel Dashboard, select **New Project** and import your repository.
 3. In **Project Settings**:
@@ -188,6 +209,7 @@ The Next.js 16 frontend is fully hostable on **Vercel** and **Netlify** with abs
 5. Click **Deploy**.
 
 #### ⚡ Hosting on Netlify
+
 1. Log into your Netlify dashboard and click **Add new site** → **Import from Git**.
 2. Select your repository.
 3. Under **Build settings**:
@@ -205,6 +227,7 @@ The Next.js 16 frontend is fully hostable on **Vercel** and **Netlify** with abs
 Since the backend is a Python FastAPI service, you can easily host it on any cloud platform:
 
 #### 🟢 Deploying on Render / Railway
+
 1. Create a new **Web Service** on Render or Railway, and connect your repository.
 2. Set the root directory to `backend`.
 3. Set the build and start options:
