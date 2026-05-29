@@ -25,7 +25,7 @@ function PracticeExplorer() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const searchParamQuery = searchParams ? searchParams.get('search') : null;
-  const { problems } = useUserStore();
+  const { problems, fetchProblemsList } = useUserStore();
 
   // Filter States
   const [searchQuery, setSearchQuery] = React.useState(searchParamQuery || '');
@@ -33,6 +33,10 @@ function PracticeExplorer() {
   const [selectedTopic, setSelectedTopic] = React.useState<string | 'All'>('All');
   const [selectedCompany, setSelectedCompany] = React.useState<string | 'All'>('All');
   const [selectedStatus, setSelectedStatus] = React.useState<string | 'All'>('All');
+
+  React.useEffect(() => {
+    fetchProblemsList();
+  }, [fetchProblemsList]);
 
   // Clear query on click
   React.useEffect(() => {
