@@ -8,25 +8,43 @@ import { MobileNav } from '@/components/layout/mobile-nav';
 import { useUIStore } from '@/store/ui-store';
 import { useUserStore } from '@/store/user-store';
 import { useRouter } from 'next/navigation';
+import { useUser } from '@clerk/nextjs';
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const { sidebarOpen } = useUIStore();
-  const { isLoggedIn, fetchProblemsList, fetchAnalytics } = useUserStore();
+  const { login, logout, updateUser, fetchProblemsList, fetchAnalytics } = useUserStore();
+  const { isLoaded, isSignedIn, user: clerkUser } = useUser();
   const hasLoaded = React.useRef(false);
 
-  // Route protection and backend data fetching
+  // Sync Clerk authentication state with Zustand store
   React.useEffect(() => {
-    if (!isLoggedIn) {
+    if (isLoaded) {
+      if (isSignedIn && clerkUser) {
+        login(); // set isLoggedIn = true in Zustand
+        updateUser({
+          name: clerkUser.fullName || clerkUser.username || "CodeArena User",
+          email: clerkUser.primaryEmailAddress?.emailAddress || "",
+          avatar: clerkUser.imageUrl || "",
+        });
+      } else {
+        logout(); // set isLoggedIn = false in Zustand
+      }
+    }
+  }, [isLoaded, isSignedIn, clerkUser, login, logout, updateUser]);
+
+  // Route protection based on Clerk loaded state
+  React.useEffect(() => {
+    if (isLoaded && !isSignedIn) {
       router.push('/login');
-    } else if (!hasLoaded.current) {
+    } else if (isLoaded && isSignedIn && !hasLoaded.current) {
       hasLoaded.current = true;
       fetchProblemsList();
       fetchAnalytics();
     }
-  }, [isLoggedIn, router, fetchProblemsList, fetchAnalytics]);
+  }, [isLoaded, isSignedIn, router, fetchProblemsList, fetchAnalytics]);
 
-  if (!isLoggedIn) {
+  if (!isLoaded || !isSignedIn) {
     return (
       <div className="min-h-screen bg-slate-950 flex items-center justify-center">
         <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-indigo-500" />

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import { ClerkProvider } from "@clerk/nextjs";
 import "./globals.css";
 import { Providers } from "./providers";
 
@@ -24,10 +25,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="h-full dark select-none">
-      <body className={`${geistSans.variable} ${geistMono.variable} h-full bg-slate-950 text-slate-100 antialiased overflow-x-hidden`}>
-        <Providers>{children}</Providers>
-      </body>
-    </html>
+    <ClerkProvider>
+      <html lang="en" className="h-full dark select-none">
+        <body className={`${geistSans.variable} ${geistMono.variable} h-full bg-slate-950 text-slate-100 antialiased overflow-x-hidden`}>
+          <Providers>{children}</Providers>
+        </body>
+      </html>
+    </ClerkProvider>
   );
 }

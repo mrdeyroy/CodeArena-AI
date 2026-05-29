@@ -8,6 +8,7 @@ import { mockNotifications } from '@/lib/mock-data';
 import { Badge } from '@/components/ui/badge';
 import { Modal } from '@/components/ui/modal';
 import { useRouter } from 'next/navigation';
+import { useClerk } from '@clerk/nextjs';
 
 export const Navbar = () => {
   const router = useRouter();
@@ -21,6 +22,7 @@ export const Navbar = () => {
     toggleTheme 
   } = useUIStore();
   const { user, logout } = useUserStore();
+  const { signOut } = useClerk();
   
   const [profileDropdownOpen, setProfileDropdownOpen] = React.useState(false);
   const [searchQuery, setSearchQuery] = React.useState('');
@@ -167,7 +169,12 @@ export const Navbar = () => {
                   Settings
                 </button>
                 <button
-                  onClick={() => { setProfileDropdownOpen(false); logout(); router.push('/'); }}
+                  onClick={async () => { 
+                    setProfileDropdownOpen(false); 
+                    await signOut();
+                    logout(); 
+                    router.push('/'); 
+                  }}
                   className="flex items-center gap-2.5 w-full px-3.5 py-2 text-xs text-rose-400 hover:bg-rose-500/10 hover:text-rose-300 transition-colors border-t border-slate-800 mt-1 cursor-pointer"
                 >
                   <LogOut className="w-3.5 h-3.5" />
