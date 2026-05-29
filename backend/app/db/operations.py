@@ -11,6 +11,63 @@ def fetch_skill_states(user_id: str) -> list[dict]:
     return resp.data or [] if resp else []
 
 
+def fetch_user_problem_statuses(user_id: str) -> dict[str, str]:
+    """Return {problem_id: status} mapping. Falls back to submissions if the status table is missing."""
+    supabase = get_supabase()
+    try:
+        resp = supabase.from_("user_problem_status").select("problem_id, status").eq("user_id", user_id).execute()
+        status_map: dict[str, str] = {}
+        for row in (resp.data or [] if resp else []):
+            status_map[row["problem_id"]] = row["status"]
+        if status_map:
+            return status_map
+    except Exception:
+        pass
+
+    resp = supabase.from_("submissions") \
+        .select("problem_id, status") \
+        .eq("user_id", user_id) \
+        .order("created_at", desc=True) \
+        .execute()
+    status_map = {}
+    for s in (resp.data or [] if resp else []):
+        pid = s["problem_id"]
+        if pid not in status_map:
+            status_map[pid] = "solved" if s["status"] == "accepted" else "attempted"
+    return status_map
+
+
+def upsert_user_problem_status(user_id: str, problem_id: str, status: str):
+    """Insert or update user_problem_status if the table exists, otherwise it's a no-op."""
+    supabase = get_supabase()
+    try:
+        existing = (
+            supabase.from_("user_problem_status")
+            .select("id, status")
+            .eq("user_id", user_id)
+            .eq("problem_id", problem_id)
+            .maybe_single()
+            .execute()
+        )
+        if existing and existing.data:
+            current = existing.data["status"]
+            if current == "solved":
+                return
+            if status == "solved" or current == "unsolved":
+                supabase.from_("user_problem_status").update({
+                    "status": status,
+                    "updated_at": "now()",
+                }).eq("id", existing.data["id"]).execute()
+        else:
+            supabase.from_("user_problem_status").insert({
+                "user_id": user_id,
+                "problem_id": problem_id,
+                "status": status,
+            }).execute()
+    except Exception:
+        pass
+
+
 def fetch_recent_submissions(user_id: str, limit: int = 20) -> list[dict]:
     supabase = get_supabase()
     resp = supabase.from_("submissions").select(

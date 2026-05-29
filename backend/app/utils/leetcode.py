@@ -142,6 +142,49 @@ def slug_to_concept(slug: str) -> str:
     return mapping.get(slug, slug.replace("-", " ").title())
 
 
+def extract_examples_from_html(html: str) -> list[dict]:
+    """Extract structured examples from LeetCode HTML description."""
+    if not html:
+        return []
+    examples = []
+
+    # Pattern 1: old format — <pre> blocks
+    pattern_pre = re.compile(
+        r'<strong\s+class="example">\s*Example\s+\d+:\s*</strong>\s*.*?<pre>\s*'
+        r'(?:<strong>)?Input:?(?:</strong>)?\s*(.*?)\n\s*'
+        r'(?:<strong>)?Output:?(?:</strong>)?\s*(.*?)'
+        r'(?:\n\s*(?:<strong>)?Explanation:?(?:</strong>)?\s*(.*?))?\s*</pre>',
+        re.DOTALL | re.IGNORECASE,
+    )
+
+    # Pattern 2: new format — <div class="example-block">
+    pattern_div = re.compile(
+        r'<strong\s+class="example">\s*Example\s+\d+:\s*</strong>[\s\S]*?'
+        r'<div\s+class="example-block">\s*'
+        r'<p>\s*<strong>Input:?</strong>\s*<span[^>]*>(.*?)</span>\s*</p>\s*\n?\s*'
+        r'<p>\s*<strong>Output:?</strong>\s*<span[^>]*>(.*?)</span>\s*</p>'
+        r'(?:\s*\n?\s*<p>\s*<strong>Explanation:?</strong>\s*<span[^>]*>(.*?)</span>\s*</p>)?',
+        re.DOTALL | re.IGNORECASE,
+    )
+
+    def _decode(s: str) -> str:
+        return s.replace("&quot;", '"').replace("&amp;", "&").replace("&lt;", "<").replace("&gt;", ">").replace("&#39;", "'")
+
+    for pattern in (pattern_pre, pattern_div):
+        for match in pattern.finditer(html):
+            inp = _decode(match.group(1)).strip()
+            out = _decode(match.group(2)).strip()
+            exp = match.group(3)
+            ex = {"input": inp, "output": out}
+            if exp:
+                ex["explanation"] = _decode(exp).strip()
+            examples.append(ex)
+        if examples:
+            break
+
+    return examples
+
+
 def parse_leetcode_detail(slug: str, detail: dict) -> dict:
     """Convert raw LeetCode detail json structure into clean metadata dict."""
     title = detail.get("title", "")
@@ -177,6 +220,7 @@ def parse_leetcode_detail(slug: str, detail: dict) -> dict:
         parts = description.split("Constraints:", 1)
         constraints = parts[1].strip()
         
+    raw_content = detail.get("content") or ""
     return {
         "title": title,
         "slug": slug,
@@ -189,5 +233,6 @@ def parse_leetcode_detail(slug: str, detail: dict) -> dict:
         "companies": extract_companies(detail.get("companyTagStats")),
         "starter_code": starter_code,
         "hints": detail.get("hints") or [],
-        "editorial": html_to_markdown(detail.get("solution").get("content")) if detail.get("solution") and detail.get("solution").get("content") else None
+        "editorial": html_to_markdown(detail.get("solution").get("content")) if detail.get("solution") and detail.get("solution").get("content") else None,
+        "examples": extract_examples_from_html(raw_content),
     }

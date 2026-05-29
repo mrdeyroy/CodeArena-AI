@@ -11,11 +11,51 @@ router = APIRouter(prefix="/graph", tags=["skill-graph"])
 
 @router.get("", response_model=GraphResponse)
 async def get_graph(supabase=Depends(get_supabase)):
-    skills_resp = supabase.from_("skills").select("*").order("name").execute()
-    deps_resp = supabase.from_("skill_dependencies").select("*").execute()
+    from fastapi.concurrency import run_in_threadpool
+    import asyncio
 
-    nodes = [SkillNode(id=s["id"], name=s["name"], description=s.get("description", ""), category=s.get("category", "general")) for s in (skills_resp.data or [])]
-    edges = [SkillEdge(id=e["id"], source_skill=e["source_skill"], target_skill=e["target_skill"], weight=e.get("weight", 1.0)) for e in (deps_resp.data or [])]
+    def fetch_skills():
+        return supabase.from_("skills").select("*").order("name").execute()
+    def fetch_deps():
+        return supabase.from_("skill_dependencies").select("*").execute()
+    def fetch_problem_concepts():
+        return supabase.from_("problems").select("slug, concepts, difficulty, title").execute()
+
+    skills_task = run_in_threadpool(fetch_skills)
+    deps_task = run_in_threadpool(fetch_deps)
+    problems_task = run_in_threadpool(fetch_problem_concepts)
+
+    skills_resp, deps_resp, problems_resp = await asyncio.gather(skills_task, deps_task, problems_task)
+
+    all_problems = problems_resp.data or []
+    skill_id_to_name = {s["id"]: s["name"] for s in (skills_resp.data or [])}
+
+    def count_problems_for_skill(skill_name: str) -> int:
+        count = 0
+        for p in all_problems:
+            concepts = p.get("concepts") or []
+            for c in concepts:
+                if skill_name.lower() in c.lower() or c.lower() in skill_name.lower():
+                    count += 1
+                    break
+        return count
+
+    nodes = []
+    for s in (skills_resp.data or []):
+        nodes.append(SkillNode(
+            id=s["id"],
+            name=s["name"],
+            description=s.get("description", ""),
+            category=s.get("category", "general"),
+            problem_count=count_problems_for_skill(s["name"]),
+        ))
+
+    edges = [SkillEdge(
+        id=e["id"],
+        source_skill=e["source_skill"],
+        target_skill=e["target_skill"],
+        weight=e.get("weight", 1.0),
+    ) for e in (deps_resp.data or [])]
 
     return GraphResponse(nodes=nodes, edges=edges)
 

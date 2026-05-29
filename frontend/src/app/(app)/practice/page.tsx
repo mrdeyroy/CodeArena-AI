@@ -18,15 +18,15 @@ import {
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { useUserStore } from '@/store/user-store';
 import { Difficulty, Problem } from '@/lib/types';
+import { useProblems } from '@/lib/hooks/use-problems';
 
 function PracticeExplorer() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const searchParamQuery = searchParams ? searchParams.get('search') : null;
-  const { problems, fetchProblemsList } = useUserStore();
-  const [hasMounted, setHasMounted] = React.useState(false);
+
+  const { data: problems = [], isLoading } = useProblems();
 
   // Filter States
   const [searchQuery, setSearchQuery] = React.useState(searchParamQuery || '');
@@ -35,11 +35,6 @@ function PracticeExplorer() {
   const [selectedCompany, setSelectedCompany] = React.useState<string | 'All'>('All');
   const [selectedStatus, setSelectedStatus] = React.useState<string | 'All'>('All');
 
-  React.useEffect(() => {
-    setHasMounted(true);
-    fetchProblemsList();
-  }, [fetchProblemsList]);
-
   // Clear query on click
   React.useEffect(() => {
     if (searchParamQuery) {
@@ -47,7 +42,7 @@ function PracticeExplorer() {
     }
   }, [searchParamQuery]);
 
-  if (!hasMounted) {
+  if (isLoading) {
     return (
       <div className="flex flex-col items-center justify-center py-24 gap-3 text-slate-500 max-w-7xl mx-auto">
         <div className="animate-spin rounded-full h-6 w-6 border-t-2 border-b-2 border-indigo-500" />

@@ -13,10 +13,9 @@ class PistonService:
         self.base_url = settings.piston_api_url.rstrip("/")
 
     async def execute(self, request: ExecuteRequest) -> ExecuteResponse:
-        # Normalize language identifier
-        lang = str(request.language).lower()
+        lang_value = request.language.value if hasattr(request.language, 'value') else str(request.language)
+        lang = lang_value.lower()
 
-        # Create temporary directory for isolated execution
         temp_dir = Path(tempfile.mkdtemp(prefix="codearena_"))
         try:
             if "python" in lang:

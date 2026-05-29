@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, Query
 
 from app.db.supabase import get_supabase
-from app.db.operations import fetch_skill_states
+from app.db.operations import fetch_skill_states, fetch_user_problem_statuses
 
 router = APIRouter(prefix="/analytics", tags=["analytics"])
 
@@ -11,30 +11,29 @@ async def get_overview(user_id: str = Query(...), supabase=Depends(get_supabase)
     from fastapi.concurrency import run_in_threadpool
     import asyncio
 
-    def fetch_subs():
-        return supabase.from_("submissions").select("id, status, problem_id").eq("user_id", user_id).execute()
+    def fetch_counts():
+        status_map = fetch_user_problem_statuses(user_id)
+        total_solved = sum(1 for v in status_map.values() if v == "solved")
+        total_attempted = sum(1 for v in status_map.values() if v == "attempted")
+        return total_solved, total_attempted
 
-    def fetch_telemetry():
-        return supabase.from_("telemetry_events").select("created_at").eq("user_id", user_id).execute()
+    def fetch_telemetry_dates():
+        resp = supabase.from_("telemetry_events").select("id, created_at").eq("user_id", user_id).execute()
+        dates = {e["created_at"][:10] for e in (resp.data or []) if e.get("created_at")}
+        return dates
 
-    sub_task = run_in_threadpool(fetch_subs)
-    telemetry_task = run_in_threadpool(fetch_telemetry)
+    counts_task = run_in_threadpool(fetch_counts)
+    telemetry_task = run_in_threadpool(fetch_telemetry_dates)
     states_task = run_in_threadpool(fetch_skill_states, user_id)
 
-    subs_resp, telemetry_resp, skill_states = await asyncio.gather(
-        sub_task, telemetry_task, states_task
+    (total_solved, total_attempted), days, skill_states = await asyncio.gather(
+        counts_task, telemetry_task, states_task
     )
 
-    submissions = subs_resp.data or []
-    total_submissions = len(submissions)
-    accepted = sum(1 for s in submissions if s["status"] == "accepted")
-    total_solved = len({s.get("problem_id") for s in submissions if s["status"] == "accepted" if s.get("problem_id")})
+    total_submissions = total_solved + total_attempted
+    acceptance_rate = round(total_solved / total_submissions * 100, 1) if total_submissions > 0 else 0.0
 
-    days = {e["created_at"][:10] for e in (telemetry_resp.data or []) if e.get("created_at")}
-
-    acceptance_rate = round(accepted / total_submissions * 100, 1) if total_submissions > 0 else 0.0
     overall_readiness = 40.0
-
     if skill_states:
         overall_readiness = round(sum(s["mastery"] for s in skill_states) / len(skill_states) * 100, 1)
 

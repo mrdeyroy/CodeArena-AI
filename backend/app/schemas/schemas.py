@@ -56,6 +56,7 @@ class SkillNode(BaseModel):
     name: str
     description: str
     category: str
+    problem_count: int = 0
 
 
 class SkillEdge(BaseModel):
