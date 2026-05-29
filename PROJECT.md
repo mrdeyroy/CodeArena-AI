@@ -18,9 +18,12 @@
 9. [AI Agents](#ai-agents)
 10. [State Management (Frontend)](#state-management-frontend)
 11. [Frontend Routes & Pages](#frontend-routes--pages)
-12. [Environment Variables](#environment-variables)
-13. [Running the Project](#running-the-project)
-14. [Competitive Analysis](#competitive-analysis)
+12. [Data Pipeline: Problems & Recommendations](#data-pipeline-problems--recommendations)
+13. [Seeding Problems from LeetCode](#seeding-problems-from-leetcode)
+14. [Submission Status Persistence](#submission-status-persistence)
+15. [Environment Variables](#environment-variables)
+16. [Running the Project](#running-the-project)
+17. [Competitive Analysis](#competitive-analysis)
 
 ---
 
@@ -95,11 +98,16 @@ CodeArena-AI/
 ├── backend/                    ← FastAPI backend
 │   ├── .env                    ← Environment (gitignored)
 │   ├── .env.example            ← Environment template
-│   ├── pyproject.toml          ← Python project config
+│   ├── pyproject.toml          ← Python project config (incl. html2text)
 │   ├── requirements.txt        ← Pip fallback deps
 │   ├── uv.lock                 ← uv lockfile
 │   ├── README.md               ← Backend-specific readme
 │   ├── PROMPT.md               ← Original architecture spec prompt
+│   │
+│   ├── scripts/                ← Utility and seed scripts
+│   │   ├── seed_problems.py    ← Fetches 100 problems from LeetCode → Supabase
+│   │   ├── leetcode_cache.json ← Cache of fetched problem list (auto-generated)
+│   │   └── leetcode_details_cache.json ← Per-problem detail cache (auto-generated)
 │   │
 │   └── app/
 │       ├── __init__.py
@@ -109,12 +117,16 @@ CodeArena-AI/
 │       ├── api/                ← FastAPI route handlers
 │       │   ├── ai.py           → /ai/*
 │       │   ├── analytics.py    → /analytics/*
+│       │   ├── auth.py         → /auth/*
+│       │   ├── coach.py        → /coach/*
 │       │   ├── contests.py     → /contests/*
 │       │   ├── execute.py      → /execute
 │       │   ├── graph.py        → /graph
 │       │   ├── interview.py    → /interview/*
+│       │   ├── problems.py     → /problems/*  (list, detail, run, submit)
 │       │   ├── readiness.py    → /readiness
 │       │   ├── speech.py       → /speech/*
+│       │   ├── submissions.py  → /submissions/status (NEW — lightweight sync)
 │       │   └── telemetry.py    → /telemetry
 │       │
 │       ├── ai/                 ← AI agent implementations
@@ -139,10 +151,12 @@ CodeArena-AI/
 │       │
 │       ├── db/                 ← Supabase integration
 │       │   ├── supabase.py     → Supabase client singleton
-│       │   └── init.sql        → Full DDL (11 tables + indexes)
+│       │   ├── operations.py   → Reusable DB helpers (fetch_problems, insert_submission, etc.)
+│       │   ├── init.sql        → Full DDL (11 tables + indexes + user_problem_status)
+│       │   └── mock-data.json  → Fallback metadata for 5 seed problems
 │       │
-│       ├── auth/               ← Auth module (placeholder)
-│       │   └── auth.py
+│       ├── auth/               ← Auth module (Supabase JWT)
+│       │   └── auth.py         → require_user / optional_user dependencies
 │       │
 │       ├── models/             ← ORM-style models (placeholder)
 │       │   └── __init__.py
@@ -172,7 +186,7 @@ CodeArena-AI/
         │   │
         │   ├── (marketing)/    ← Landing page route group
         │   │   ├── layout.tsx
-        │   │   └── page.tsx    ← Full landing page
+        │   │   └── page.tsx    ← Full landing page (430 lines)
         │   │
         │   ├── (auth)/         ← Auth route group
         │   │   ├── layout.tsx
@@ -180,9 +194,12 @@ CodeArena-AI/
         │   │   └── register/
         │   │
         │   └── (app)/          ← Authenticated app route group
-        │       ├── layout.tsx  ← Shell layout (sidebar + navbar + AI panel)
+        │       ├── layout.tsx  ← Shell layout (sidebar + navbar + AI panel, fetches problems on mount)
+        │       ├── providers.tsx ← QueryClientProvider for React Query (NEW)
         │       ├── dashboard/
         │       ├── practice/
+        │       │   ├── page.tsx           ← Explorer with filters (reads from store, not mock data)
+        │       │   └── [problemId]/page.tsx ← Full coding workspace (Monaco editor, run/submit via API)
         │       ├── graph/
         │       ├── coach/
         │       ├── interview/
@@ -211,12 +228,15 @@ CodeArena-AI/
         │       └── tabs.tsx
         │
         ├── lib/                ← Shared TypeScript utilities
+        │   ├── api.ts          ← Full API client (problems, run/submit, graph, coach, interviews, submissions)
+        │   ├── hooks/
+        │   │   └── use-problems.ts ← React Query hooks (useProblems, useProblem) (NEW)
         │   ├── types.ts        ← All TypeScript interfaces (278 lines)
-        │   └── mock-data.ts    ← Full mock data for all entities (768 lines)
+        │   └── mock-data.ts    ← Mock data for landing page + fallback (768 lines)
         │
         └── store/              ← Zustand state stores
             ├── ui-store.ts     ← UI state (sidebar, panels, theme)
-            └── user-store.ts   ← User, problems, submissions state
+            └── user-store.ts   ← User, problems, submissions (persists status to backend)
 ```
 
 ---
@@ -342,10 +362,11 @@ All tables live in Supabase PostgreSQL. Full DDL at `backend/app/db/init.sql`.
 | `users` | User profiles | id, email, full_name, created_at |
 | `skills` | Skill graph nodes | id, name, description, category |
 | `skill_dependencies` | Graph edges (prereqs) | source_skill → target_skill, weight |
-| `problems` | Coding problems | id, title, difficulty, description, constraints, examples (JSONB), concepts[] |
+| `problems` | Coding problems | id, title, **slug**, difficulty, description, constraints, examples (JSONB), concepts[], **acceptance_rate**, **estimated_time**, **companies** (JSONB), **starter_code** (JSONB), **hints** (JSONB), **editorial**, **source_url**, created_at |
 | `submissions` | Code submission history | user_id → problem_id, language, code, status, runtime, memory |
 | `telemetry_events` | Learning behavior data | user_id → problem_id, time_taken, attempts, hints_used, confidence, correct |
 | `skill_states` | Per-user skill mastery | user_id → skill_id, mastery, struggle_score (UNIQUE constraint) |
+| `user_problem_status` | Lightweight solved/attempted tracking | user_id → problem_id, status, updated_at (UNIQUE) |
 | `interviews` | Mock interview sessions | user_id, interview_type, overall_score |
 | `interview_responses` | Individual Q&A pairs | interview_id, question, answer, evaluation (JSONB) |
 | `contests` | Coding competitions | title, start_time, end_time, problem_ids[] |
@@ -442,6 +463,14 @@ All agents use structured JSON output with Pydantic response models.
 | `POST` | `/speech/transcribe` | Speech-to-text (placeholder — provider swappable) |
 | `POST` | `/speech/speak` | Text-to-speech (placeholder — provider swappable) |
 
+### Submission Status
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET` | `/submissions/status?problem_id=X` | Get solved/attempted status for one problem (requires auth) |
+| `GET` | `/submissions/status` | Get all statuses for the authenticated user |
+| `POST` | `/submissions/status?problem_id=X&status=solved` | Upsert submission status (requires auth) |
+
 ---
 
 ## Core Engines & Services
@@ -529,6 +558,148 @@ All agents live in `backend/app/ai/agents.py` and share common patterns:
 | `/community` | Community | Discussion posts, questions, study groups |
 | `/profile` | Profile | User profile, stats, socials |
 | `/settings` | Settings | Account configuration |
+
+---
+
+## Data Pipeline: Problems & Recommendations
+
+### Data Flow
+
+```
+LeetCode GraphQL API
+    │
+    ▼
+Seed Script (backend/scripts/seed_problems.py)
+    │  └─ Fetches ~100 problems via problemsetQuestionList query
+    │  └─ Caches to leetcode_cache.json (resumable)
+    │  └─ Fetches per-problem details (hints, code snippets, companies, editorial)
+    │  └─ Converts HTML → Markdown via html2text
+    │  └─ Filters starter code: Python, C, C++, Java only
+    │
+    ▼
+Supabase (problems table)
+    │
+    ├──▶ GET /problems?difficulty=&topic=&search=  →  Frontend practice explorer
+    │      └─ Computes status from user_problem_status + submissions tables
+    │      └─ Computes is_ai_recommended from skill_states (mastery < 50%)
+    │
+    ├──▶ GET /problems/{slug}  →  Frontend coding workspace
+    │      └─ Full problem detail: description, examples, hints, editorial, starter code
+    │
+    ├──▶ POST /problems/{id}/run     →  Piston code execution
+    ├──▶ POST /problems/{id}/submit  →  Piston + telemetry + skill state update
+    │
+    └──▶ POST /ai/recommend  →  Uses real Supabase data (not hardcoded stubs)
+           └─ Feeds available problems to AI for personalized recommendations
+```
+
+### Recommendation Signals
+
+- **Concept mastery gap**: If a user's mastery for a concept is < 50%, problems tagged with that concept get higher priority
+- **Submission history**: Failed problems get re-prioritized
+- **Difficulty appropriateness**: Matched to user's average mastery level
+- **Diversity**: Avoids over-recommending the same topic
+
+### Database Tables Involved
+
+| Table | Role |
+|-------|------|
+| `problems` | All problem data (title, description, examples, hints, starter code, etc.) |
+| `user_problem_status` | Per-user solved/attempted/unsolved tracking |
+| `submissions` | Full submission history (used for detailed analytics) |
+| `skill_states` | Per-user mastery scores per concept |
+| `skills` | Skill graph nodes (maps to problem concepts) |
+
+---
+
+## Seeding Problems from LeetCode
+
+### Seed Script
+
+**File**: `backend/scripts/seed_problems.py`
+
+Fetches real coding problems from LeetCode's public GraphQL API and inserts them into Supabase.
+
+**Features**:
+- Fetches 100 problems in batches of 20 (5 pages)
+- Caches raw responses to `backend/scripts/leetcode_cache.json` for resumability
+- Fetches per-problem details (hints, code snippets via `codeSnippets`, company tags via `companyTagStats`, editorial)
+- Converts HTML descriptions to clean Markdown via `html2text`
+- Filters starter code to 4 languages: **Python**, **C**, **C++**, **Java**
+- Estimates solve time based on difficulty + acceptance rate
+- Ensures difficulty diversity (~40 easy, ~40 medium, ~20 hard)
+- Skips insert if problems already exist (idempotent)
+
+**Run**:
+```bash
+cd backend
+python -m scripts.seed_problems
+```
+
+**Cache files** (created in `backend/scripts/`):
+- `leetcode_cache.json` — raw fetched problem list (avoids re-fetching on retry)
+- `leetcode_details_cache.json` — per-problem detail responses
+
+### Dependencies
+
+Added `html2text>=2024.2.0` to `pyproject.toml` for HTML→Markdown conversion in the seed script.
+
+### Schema Changes
+
+Updated `backend/app/db/init.sql` with new columns on `problems` table + new `user_problem_status` table:
+
+```sql
+-- New columns added to problems
+slug TEXT UNIQUE NOT NULL,
+acceptance_rate FLOAT DEFAULT 0.0,
+estimated_time TEXT DEFAULT '',
+companies JSONB DEFAULT '[]',
+starter_code JSONB DEFAULT '{}',
+hints JSONB DEFAULT '[]',
+editorial TEXT,
+source_url TEXT,
+created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+
+-- New table
+CREATE TABLE user_problem_status (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    problem_id UUID NOT NULL REFERENCES problems(id) ON DELETE CASCADE,
+    status TEXT NOT NULL DEFAULT 'unsolved',
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    UNIQUE(user_id, problem_id)
+);
+```
+
+---
+
+## Submission Status Persistence
+
+### Sync Mechanism
+
+Previously, submission status (Solved / Attempted / Unsolved) was stored only in browser memory via Zustand and reset on refresh. Now it persists to Supabase.
+
+### Endpoints
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET` | `/submissions/status?problem_id=X` | Get status for a specific problem |
+| `GET` | `/submissions/status` | Get all statuses for a user (hydration) |
+| `POST` | `/submissions/status?problem_id=X&status=solved` | Upsert status |
+
+### Flow
+
+1. User submits code → frontend calls `POST /submissions/status` with `solved` or `attempted`
+2. On page load → `GET /submissions/status` fetches all statuses
+3. Store merges server statuses with local problem data
+4. Status survives page refresh and works across devices
+
+### Frontend
+
+- New API functions in `src/lib/api.ts`: `fetchSubmissionStatus()`, `fetchAllSubmissionStatuses()`, `updateSubmissionStatus()`
+- Store `addSubmission` and `submitCode` both call `updateSubmissionStatus()` after updating local state
+- React Query infrastructure added: `src/app/providers.tsx` wraps app with `QueryClientProvider`
+- Custom hooks: `src/lib/hooks/use-problems.ts` with `useProblems()` and `useProblem()`
 
 ### Public Pages
 
