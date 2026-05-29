@@ -41,7 +41,7 @@ async def get_skill_analytics(user_id: str = Query(...)):
     for s in skill_states:
         skill_data = s.get("skills") or {}
         skills.append({
-            "skill_name": skill_data.get("name", s["skill_id"]),
+            "skill_name": skill_data.get("name") or skill_data.get("id") or "Unknown",
             "mastery": s["mastery"],
             "problems_attempted": 0,
             "problems_solved": 0,

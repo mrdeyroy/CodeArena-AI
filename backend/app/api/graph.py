@@ -44,11 +44,11 @@ async def get_node_insights(
     weak_skills: list[str] = []
     for s in skill_states:
         skill_data = s.get("skills") or {}
-        sid = s["skill_id"]
+        sid = skill_data.get("id") or "Unknown"
         m = s["mastery"]
         mastery_map[sid] = m
         if m < 0.5:
-            weak_skills.append(skill_data.get("name", sid))
+            weak_skills.append(skill_data.get("name") or sid)
 
     weak_prereqs = skill_graph_service.find_weak_prerequisites(
         graph, node_id, mastery_map, threshold=0.5
@@ -77,11 +77,15 @@ async def get_node_insights(
         insight_str = f"Focus on strengthening {node['name']} fundamentals. Practice with recommended problems below."
 
     recommended_slugs: list[str] = []
+    skill_id_to_name = {s["id"]: s["name"] for s in (skills_resp.data or [])}
     if weak_prereqs:
         for pid in weak_prereqs[:3]:
+            skill_name = skill_id_to_name.get(pid)
+            if not skill_name:
+                continue
             for p in all_problems:
                 concepts = p.get("concepts") or []
-                if pid in concepts or any(pid in c for c in concepts):
+                if skill_name in concepts or any(skill_name in c for c in concepts):
                     slug = p.get("slug", "")
                     if slug and slug not in recommended_slugs:
                         recommended_slugs.append(slug)

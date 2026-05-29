@@ -44,6 +44,19 @@ if MOCK_DATA_PATH.exists():
     except Exception as e:
         print("Failed to load mock-data.json:", e)
 
+# Load richer leetcode metadata from cached JSON
+LEETCODE_CACHE_PATH = Path(__file__).parent.parent.parent / "scripts" / "leetcode_details_cache.json"
+leetcode_cache_metadata = {}
+if LEETCODE_CACHE_PATH.exists():
+    try:
+        from app.utils.leetcode import parse_leetcode_detail
+        with open(LEETCODE_CACHE_PATH, "r") as f:
+            raw_cache = json.load(f)
+            for slug, detail in raw_cache.items():
+                leetcode_cache_metadata[slug] = parse_leetcode_detail(slug, detail)
+    except Exception as e:
+        print("Failed to load leetcode_details_cache.json:", e)
+
 
 @router.get("", response_model=list[ProblemListItem])
 async def list_problems(
@@ -87,15 +100,15 @@ async def list_problems(
                     if state and state.get("mastery", 0) < 0.5:
                         is_ai_recommended = True
 
-        meta = mock_problems_metadata.get(p.get("slug", "")) or {}
+        meta = leetcode_cache_metadata.get(p.get("slug", "")) or mock_problems_metadata.get(p.get("slug", "")) or {}
         items.append(ProblemListItem(
             id=p["id"],
             title=p["title"],
             slug=p.get("slug", ""),
             difficulty=p["difficulty"],
-            acceptance_rate=round(meta.get("acceptanceRate") or p.get("acceptance_rate") or 0.0, 1),
-            estimated_time=meta.get("estimatedTime") or p.get("estimated_time") or "",
-            concepts=p.get("concepts") or meta.get("topics") or [],
+            acceptance_rate=round(meta.get("acceptance_rate") or meta.get("acceptanceRate") or p.get("acceptance_rate") or 0.0, 1),
+            estimated_time=meta.get("estimated_time") or meta.get("estimatedTime") or p.get("estimated_time") or "",
+            concepts=p.get("concepts") or meta.get("concepts") or meta.get("topics") or [],
             companies=meta.get("companies") or p.get("companies") or [],
             status=problem_status,
             is_ai_recommended=is_ai_recommended,
@@ -137,20 +150,24 @@ async def get_problem(slug: str):
             except Exception as e:
                 print("Failed to save generated starter code to DB:", e)
 
-    meta = mock_problems_metadata.get(slug) or {}
+    meta = leetcode_cache_metadata.get(slug) or mock_problems_metadata.get(slug) or {}
+    meta_constraints = meta.get("constraints") or ""
+    if isinstance(meta_constraints, list):
+        meta_constraints = "\n".join(meta_constraints)
+
     return Problem(
         id=problem["id"],
         title=problem["title"],
         slug=problem.get("slug", ""),
         difficulty=problem["difficulty"],
         description=problem.get("description", ""),
-        constraints=problem.get("constraints") or "\n".join(meta.get("constraints", [])),
+        constraints=problem.get("constraints") or meta_constraints,
         examples=problem.get("examples") or examples or meta.get("examples") or [],
-        concepts=problem.get("concepts") or meta.get("topics") or [],
-        acceptance_rate=round(meta.get("acceptanceRate") or problem.get("acceptance_rate") or 0.0, 1),
-        estimated_time=meta.get("estimatedTime") or problem.get("estimated_time") or "",
+        concepts=problem.get("concepts") or meta.get("concepts") or meta.get("topics") or [],
+        acceptance_rate=round(meta.get("acceptance_rate") or meta.get("acceptanceRate") or problem.get("acceptance_rate") or 0.0, 1),
+        estimated_time=meta.get("estimated_time") or meta.get("estimatedTime") or problem.get("estimated_time") or "",
         companies=meta.get("companies") or problem.get("companies") or [],
-        starter_code=problem.get("starter_code") or starter_code or meta.get("starterCode") or {},
+        starter_code=problem.get("starter_code") or starter_code or meta.get("starterCode") or meta.get("starter_code") or {},
         hints=meta.get("hints") or problem.get("hints") or [],
         editorial=problem.get("editorial") or meta.get("editorial"),
     )

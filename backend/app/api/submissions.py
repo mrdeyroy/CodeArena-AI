@@ -8,6 +8,17 @@ from app.db.supabase import get_supabase
 router = APIRouter(prefix="/submissions", tags=["submissions"])
 
 
+@router.get("/recent")
+async def get_recent_submissions(
+    limit: int = Query(10),
+    user: dict = Depends(require_user),
+):
+    """Fetch recent submissions for the logged in user."""
+    from app.db.operations import fetch_recent_submissions
+    submissions = fetch_recent_submissions(user["sub"], limit=limit)
+    return {"submissions": submissions}
+
+
 @router.get("/status")
 async def get_submission_status(
     problem_id: str | None = Query(None),

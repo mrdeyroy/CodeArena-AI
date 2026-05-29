@@ -1,69 +1,232 @@
-import httpx
+import asyncio
+import tempfile
+import time
+from pathlib import Path
+import os
+import shutil
 
 from app.config import settings
 from app.schemas.schemas import ExecuteRequest, ExecuteResponse, SubmissionStatus, Language
-
-PISTON_LANGUAGE_MAP = {
-    Language.PYTHON: ("python", "3.10.0"),
-    Language.CPP: ("cpp", "10.2.0"),
-    Language.JAVA: ("java", "15.0.2"),
-}
-
-STATUS_MAP = {
-    "accepted": SubmissionStatus.ACCEPTED,
-    "wrong_answer": SubmissionStatus.WRONG_ANSWER,
-    "time_limit_exceeded": SubmissionStatus.TIME_LIMIT_EXCEEDED,
-    "memory_limit_exceeded": SubmissionStatus.MEMORY_LIMIT_EXCEEDED,
-    "runtime_error": SubmissionStatus.RUNTIME_ERROR,
-    "compile_error": SubmissionStatus.COMPILE_ERROR,
-    "processing": SubmissionStatus.PROCESSING,
-}
-
 
 class PistonService:
     def __init__(self):
         self.base_url = settings.piston_api_url.rstrip("/")
 
     async def execute(self, request: ExecuteRequest) -> ExecuteResponse:
-        lang, version = PISTON_LANGUAGE_MAP.get(request.language, ("python", "3.10.0"))
+        # Normalize language identifier
+        lang = str(request.language).lower()
 
-        body = {
-            "language": lang,
-            "version": version,
-            "files": [{"name": "main", "content": request.code}],
-            "stdin": request.stdin or "",
-            "run_timeout": 30000,
-            "compile_timeout": 30000,
-        }
+        # Create temporary directory for isolated execution
+        temp_dir = Path(tempfile.mkdtemp(prefix="codearena_"))
+        try:
+            if "python" in lang:
+                code_file = temp_dir / "solution.py"
+                code_file.write_text(request.code, encoding="utf-8")
+                
+                start_time = time.perf_counter()
+                proc = await asyncio.create_subprocess_exec(
+                    "python3",
+                    str(code_file),
+                    stdin=asyncio.subprocess.PIPE,
+                    stdout=asyncio.subprocess.PIPE,
+                    stderr=asyncio.subprocess.PIPE,
+                )
+                
+                try:
+                    stdout, stderr = await asyncio.wait_for(
+                        proc.communicate(input=(request.stdin or "").encode("utf-8")),
+                        timeout=5.0
+                    )
+                    runtime = time.perf_counter() - start_time
+                    exit_code = proc.returncode
+                except asyncio.TimeoutError:
+                    try:
+                        proc.kill()
+                    except Exception:
+                        pass
+                    return ExecuteResponse(
+                        status=SubmissionStatus.TIME_LIMIT_EXCEEDED,
+                        stdout=None,
+                        stderr="Execution timed out (5.0s limit reached).",
+                        runtime=5.0,
+                        memory=0,
+                    )
+                
+                decoded_stdout = stdout.decode("utf-8", errors="replace")
+                decoded_stderr = stderr.decode("utf-8", errors="replace")
+                
+                if exit_code != 0:
+                    return ExecuteResponse(
+                        status=SubmissionStatus.RUNTIME_ERROR,
+                        stdout=decoded_stdout or None,
+                        stderr=decoded_stderr or f"Exit code {exit_code}",
+                        runtime=runtime,
+                        memory=0,
+                    )
+                
+                return ExecuteResponse(
+                    status=SubmissionStatus.ACCEPTED,
+                    stdout=decoded_stdout,
+                    stderr=decoded_stderr or None,
+                    runtime=runtime,
+                    memory=0,
+                )
 
-        async with httpx.AsyncClient(timeout=60) as client:
-            resp = await client.post(
-                f"{self.base_url}/execute",
-                json=body,
-                headers={"Content-Type": "application/json"},
-            )
-            resp.raise_for_status()
-            result = resp.json()
+            elif "cpp" in lang or "c++" in lang:
+                # Compile step
+                cpp_file = temp_dir / "solution.cpp"
+                cpp_file.write_text(request.code, encoding="utf-8")
+                exec_file = temp_dir / "solution_bin"
+                
+                # Check for g++
+                gpp_path = shutil.which("g++")
+                if not gpp_path:
+                    return ExecuteResponse(
+                        status=SubmissionStatus.COMPILE_ERROR,
+                        stdout=None,
+                        stderr="g++ compiler is not available on the server.",
+                        runtime=0,
+                        memory=0,
+                    )
 
-        run = result.get("run", {})
-        compile_output = result.get("compile", {})
-        exit_code = run.get("code", -1)
+                compile_proc = await asyncio.create_subprocess_exec(
+                    "g++", "-O3", str(cpp_file), "-o", str(exec_file),
+                    stdout=asyncio.subprocess.PIPE,
+                    stderr=asyncio.subprocess.PIPE,
+                )
+                comp_stdout, comp_stderr = await compile_proc.communicate()
+                
+                if compile_proc.returncode != 0:
+                    return ExecuteResponse(
+                        status=SubmissionStatus.COMPILE_ERROR,
+                        stdout=None,
+                        stderr=comp_stderr.decode("utf-8", errors="replace"),
+                        runtime=0,
+                        memory=0,
+                    )
+                
+                # Execute step
+                start_time = time.perf_counter()
+                proc = await asyncio.create_subprocess_exec(
+                    str(exec_file),
+                    stdin=asyncio.subprocess.PIPE,
+                    stdout=asyncio.subprocess.PIPE,
+                    stderr=asyncio.subprocess.PIPE,
+                )
+                
+                try:
+                    stdout, stderr = await asyncio.wait_for(
+                        proc.communicate(input=(request.stdin or "").encode("utf-8")),
+                        timeout=5.0
+                    )
+                    runtime = time.perf_counter() - start_time
+                    exit_code = proc.returncode
+                except asyncio.TimeoutError:
+                    try:
+                        proc.kill()
+                    except Exception:
+                        pass
+                    return ExecuteResponse(
+                        status=SubmissionStatus.TIME_LIMIT_EXCEEDED,
+                        stdout=None,
+                        stderr="Execution timed out (5.0s limit reached).",
+                        runtime=5.0,
+                        memory=0,
+                    )
 
-        if compile_output.get("code", 0) != 0:
-            status = SubmissionStatus.COMPILE_ERROR
-        elif exit_code == 124:
-            status = SubmissionStatus.TIME_LIMIT_EXCEEDED
-        elif exit_code == 137:
-            status = SubmissionStatus.MEMORY_LIMIT_EXCEEDED
-        elif exit_code != 0:
-            status = SubmissionStatus.RUNTIME_ERROR
-        else:
-            status = SubmissionStatus.ACCEPTED
+                decoded_stdout = stdout.decode("utf-8", errors="replace")
+                decoded_stderr = stderr.decode("utf-8", errors="replace")
 
-        return ExecuteResponse(
-            status=status,
-            stdout=run.get("output") or (run.get("stdout", "").strip() or None),
-            stderr=run.get("stderr", "").strip() or None,
-            runtime=run.get("wall_time"),
-            memory=run.get("memory"),
-        )
+                if exit_code != 0:
+                    return ExecuteResponse(
+                        status=SubmissionStatus.RUNTIME_ERROR,
+                        stdout=decoded_stdout or None,
+                        stderr=decoded_stderr or f"Exit code {exit_code}",
+                        runtime=runtime,
+                        memory=0,
+                    )
+
+                return ExecuteResponse(
+                    status=SubmissionStatus.ACCEPTED,
+                    stdout=decoded_stdout,
+                    stderr=decoded_stderr or None,
+                    runtime=runtime,
+                    memory=0,
+                )
+
+            elif "javascript" in lang or "js" in lang:
+                code_file = temp_dir / "solution.js"
+                code_file.write_text(request.code, encoding="utf-8")
+                
+                # Check for node
+                node_path = shutil.which("node")
+                if not node_path:
+                    return ExecuteResponse(
+                        status=SubmissionStatus.RUNTIME_ERROR,
+                        stdout=None,
+                        stderr="node.js runtime is not available on the server.",
+                        runtime=0,
+                        memory=0,
+                    )
+
+                start_time = time.perf_counter()
+                proc = await asyncio.create_subprocess_exec(
+                    "node",
+                    str(code_file),
+                    stdin=asyncio.subprocess.PIPE,
+                    stdout=asyncio.subprocess.PIPE,
+                    stderr=asyncio.subprocess.PIPE,
+                )
+                
+                try:
+                    stdout, stderr = await asyncio.wait_for(
+                        proc.communicate(input=(request.stdin or "").encode("utf-8")),
+                        timeout=5.0
+                    )
+                    runtime = time.perf_counter() - start_time
+                    exit_code = proc.returncode
+                except asyncio.TimeoutError:
+                    try:
+                        proc.kill()
+                    except Exception:
+                        pass
+                    return ExecuteResponse(
+                        status=SubmissionStatus.TIME_LIMIT_EXCEEDED,
+                        stdout=None,
+                        stderr="Execution timed out (5.0s limit reached).",
+                        runtime=5.0,
+                        memory=0,
+                    )
+                
+                decoded_stdout = stdout.decode("utf-8", errors="replace")
+                decoded_stderr = stderr.decode("utf-8", errors="replace")
+                
+                if exit_code != 0:
+                    return ExecuteResponse(
+                        status=SubmissionStatus.RUNTIME_ERROR,
+                        stdout=decoded_stdout or None,
+                        stderr=decoded_stderr or f"Exit code {exit_code}",
+                        runtime=runtime,
+                        memory=0,
+                    )
+                
+                return ExecuteResponse(
+                    status=SubmissionStatus.ACCEPTED,
+                    stdout=decoded_stdout,
+                    stderr=decoded_stderr or None,
+                    runtime=runtime,
+                    memory=0,
+                )
+
+            else:
+                return ExecuteResponse(
+                    status=SubmissionStatus.COMPILE_ERROR,
+                    stdout=None,
+                    stderr=f"Language '{request.language}' is not supported in the local sandbox environment. Supported languages are Python, C++, and JavaScript.",
+                    runtime=0,
+                    memory=0,
+                )
+
+        finally:
+            # Clean up temp directory recursively
+            shutil.rmtree(temp_dir, ignore_errors=True)

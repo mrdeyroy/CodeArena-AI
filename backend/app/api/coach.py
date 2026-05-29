@@ -22,7 +22,7 @@ async def coach_chat(
     weak_skills: list[str] = []
     for s in skill_states:
         skill_data = s.get("skills") or {}
-        name = skill_data.get("name", s["skill_id"])
+        name = skill_data.get("name") or skill_data.get("id") or "Unknown"
         m = s["mastery"]
         mastery[name] = m
         if m < 0.5:
@@ -60,7 +60,7 @@ async def get_weaknesses(
     for s in skill_states:
         if s["mastery"] < 0.5:
             skill_data = s.get("skills") or {}
-            name = skill_data.get("name", s["skill_id"])
+            name = skill_data.get("name") or skill_data.get("id") or "Unknown"
             weaknesses.append(WeaknessItem(skill_name=name, mastery=s["mastery"]))
 
     weaknesses.sort(key=lambda w: w.mastery)
