@@ -37,9 +37,9 @@ def upsert_skill_state(user_id: str, skill_id: str, mastery: float, struggle: fl
         }).execute()
 
 
-def fetch_problems(filters: dict | None = None) -> list[dict]:
+def fetch_problems(filters: dict | None = None, select_columns: str = "*") -> list[dict]:
     supabase = get_supabase()
-    query = supabase.from_("problems").select("*")
+    query = supabase.from_("problems").select(select_columns)
     if filters:
         for k, v in filters.items():
             if k == "concept":

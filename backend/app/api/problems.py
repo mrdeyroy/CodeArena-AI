@@ -75,7 +75,43 @@ async def list_problems(
     if search:
         filters["search"] = search
 
-    problems = fetch_problems(filters)
+    problems = fetch_problems(filters, select_columns="id, title, slug, difficulty, concepts")
+
+    # Bulk-fetch submissions and skill states if user is logged in to avoid N+1 queries
+    solved_problem_ids = set()
+    attempted_problem_ids = set()
+    skill_mastery = {}
+
+    if user:
+        try:
+            from fastapi.concurrency import run_in_threadpool
+            import asyncio
+            from app.db.operations import fetch_skill_states
+
+            supabase = get_supabase()
+
+            def get_subs():
+                return supabase.from_("submissions").select("problem_id, status").eq("user_id", user["sub"]).execute()
+
+            sub_task = run_in_threadpool(get_subs)
+            states_task = run_in_threadpool(fetch_skill_states, user["sub"])
+
+            sub_resp, skill_states = await asyncio.gather(sub_task, states_task)
+
+            for s in (sub_resp.data or []):
+                pid = s["problem_id"]
+                if s["status"] == "accepted":
+                    solved_problem_ids.add(pid)
+                else:
+                    attempted_problem_ids.add(pid)
+            
+            for s in skill_states:
+                skill_data = s.get("skills") or {}
+                sname = skill_data.get("name")
+                if sname:
+                    skill_mastery[sname] = s.get("mastery", 0.0)
+        except Exception as e:
+            print("Failed to bulk-fetch user metrics:", e)
 
     items: list[ProblemListItem] = []
     for p in problems:
@@ -83,22 +119,18 @@ async def list_problems(
         is_ai_recommended = False
 
         if user:
-            supabase = get_supabase()
-            sub_resp = supabase.from_("submissions").select("status").eq("user_id", user["sub"]).eq("problem_id", p["id"]).execute()
-            subs = sub_resp.data or []
-            if any(s["status"] == "accepted" for s in subs):
+            pid = p["id"]
+            if pid in solved_problem_ids:
                 problem_status = "Solved"
-            elif subs:
+            elif pid in attempted_problem_ids:
                 problem_status = "Attempted"
 
             concepts = p.get("concepts") or []
             if concepts:
                 concept = concepts[0]
-                skill = fetch_skill_by_name(concept)
-                if skill:
-                    state = fetch_user_skill_state(user["sub"], skill["id"])
-                    if state and state.get("mastery", 0) < 0.5:
-                        is_ai_recommended = True
+                mastery = skill_mastery.get(concept, 1.0)
+                if mastery < 0.5:
+                    is_ai_recommended = True
 
         meta = leetcode_cache_metadata.get(p.get("slug", "")) or mock_problems_metadata.get(p.get("slug", "")) or {}
         items.append(ProblemListItem(
