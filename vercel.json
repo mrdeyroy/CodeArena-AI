@@ -8,7 +8,9 @@
     },
     "backend": {
       "root": "backend",
-      "routePrefix": "/_/backend"
+      "routePrefix": "/_/backend",
+      "entrypoint": "app/main.py",
+      "framework": "fastapi"
     }
   },
   "buildCommand": "cd frontend && npm run build",
