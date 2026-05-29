@@ -8,6 +8,7 @@ from app.ai.agents import (
     recommend_problems,
     analyze_plagiarism,
 )
+from app.db.supabase import get_supabase
 from app.schemas.schemas import (
     HintRequest,
     HintResponse,
@@ -83,57 +84,23 @@ async def roadmap(request: RoadmapRequest):
 
 @router.post("/recommend", response_model=RecommendResponse)
 async def recommend(request: RecommendRequest):
-    # In production, available_problems would come from Supabase
-    available = [
-        {
-            "id": "p1",
-            "title": "Two Sum",
-            "difficulty": "easy",
-            "concepts": ["arrays", "hashmaps"],
-        },
-        {
-            "id": "p2",
-            "title": "Valid Parentheses",
-            "difficulty": "easy",
-            "concepts": ["strings", "stack"],
-        },
-        {
-            "id": "p3",
-            "title": "Merge Intervals",
-            "difficulty": "medium",
-            "concepts": ["arrays", "sorting"],
-        },
-        {
-            "id": "p4",
-            "title": "Binary Tree Level Order",
-            "difficulty": "medium",
-            "concepts": ["trees", "bfs"],
-        },
-        {
-            "id": "p5",
-            "title": "Course Schedule",
-            "difficulty": "medium",
-            "concepts": ["graphs", "dfs"],
-        },
-        {
-            "id": "p6",
-            "title": "Longest Increasing Subsequence",
-            "difficulty": "medium",
-            "concepts": ["arrays", "dp"],
-        },
-        {
-            "id": "p7",
-            "title": "Word Ladder",
-            "difficulty": "hard",
-            "concepts": ["strings", "graphs", "bfs"],
-        },
-        {
-            "id": "p8",
-            "title": "Median of Two Sorted Arrays",
-            "difficulty": "hard",
-            "concepts": ["arrays", "binary_search"],
-        },
-    ]
+    # Fetch real problems from Supabase
+    try:
+        supabase = get_supabase()
+        resp = supabase.from_("problems").select("id, title, difficulty, concepts").execute()
+        available = resp.data or []
+    except Exception:
+        # Fallback to hardcoded if Supabase is unavailable
+        available = [
+            {"id": "p1", "title": "Two Sum", "difficulty": "easy", "concepts": ["arrays", "hashmaps"]},
+            {"id": "p2", "title": "Valid Parentheses", "difficulty": "easy", "concepts": ["strings", "stack"]},
+            {"id": "p3", "title": "Merge Intervals", "difficulty": "medium", "concepts": ["arrays", "sorting"]},
+            {"id": "p4", "title": "Binary Tree Level Order", "difficulty": "medium", "concepts": ["trees", "bfs"]},
+            {"id": "p5", "title": "Course Schedule", "difficulty": "medium", "concepts": ["graphs", "dfs"]},
+            {"id": "p6", "title": "Longest Increasing Subsequence", "difficulty": "medium", "concepts": ["arrays", "dp"]},
+            {"id": "p7", "title": "Word Ladder", "difficulty": "hard", "concepts": ["strings", "graphs", "bfs"]},
+            {"id": "p8", "title": "Median of Two Sorted Arrays", "difficulty": "hard", "concepts": ["arrays", "binary_search"]},
+        ]
     try:
         result = await recommend_problems(
             current_mastery=request.current_mastery,

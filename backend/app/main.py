@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.api import ai, analytics, auth, coach, contests, execute, graph, interview, problems, readiness, speech, telemetry
+from app.api import ai, analytics, auth, coach, contests, execute, graph, interview, problems, readiness, speech, submissions, telemetry
 
 app = FastAPI(
     title="CodeArena AI",
@@ -31,6 +31,7 @@ app.include_router(interview.router)
 app.include_router(problems.router)
 app.include_router(readiness.router)
 app.include_router(speech.router)
+app.include_router(submissions.router)
 app.include_router(telemetry.router)
 
 

@@ -1,5 +1,7 @@
 """Problems router: list, detail, run, and submit coding problems."""
 
+import json
+from pathlib import Path
 from fastapi import APIRouter, Depends, HTTPException, Query
 
 from app.auth.auth import optional_user, require_user
@@ -30,6 +32,18 @@ from app.db.supabase import get_supabase
 router = APIRouter(prefix="/problems", tags=["problems"])
 piston = PistonService()
 
+# Load mock metadata for fields not present in the DB
+MOCK_DATA_PATH = Path(__file__).parent.parent / "db" / "mock-data.json"
+mock_problems_metadata = {}
+if MOCK_DATA_PATH.exists():
+    try:
+        with open(MOCK_DATA_PATH, "r") as f:
+            data = json.load(f)
+            for p in data.get("problems", []):
+                mock_problems_metadata[p["slug"]] = p
+    except Exception as e:
+        print("Failed to load mock-data.json:", e)
+
 
 @router.get("", response_model=list[ProblemListItem])
 async def list_problems(
@@ -42,7 +56,7 @@ async def list_problems(
 ):
     filters: dict = {}
     if difficulty:
-        filters["difficulty"] = difficulty
+        filters["difficulty"] = difficulty.lower()
     if topic:
         filters["concept"] = topic
     if search:
@@ -73,15 +87,16 @@ async def list_problems(
                     if state and state.get("mastery", 0) < 0.5:
                         is_ai_recommended = True
 
+        meta = mock_problems_metadata.get(p.get("slug", "")) or {}
         items.append(ProblemListItem(
             id=p["id"],
             title=p["title"],
             slug=p.get("slug", ""),
             difficulty=p["difficulty"],
-            acceptance_rate=round(p.get("acceptance_rate", 0), 1) if p.get("acceptance_rate") else 0.0,
-            estimated_time=p.get("estimated_time", ""),
-            concepts=p.get("concepts") or [],
-            companies=p.get("companies") or [],
+            acceptance_rate=round(meta.get("acceptanceRate") or p.get("acceptance_rate") or 0.0, 1),
+            estimated_time=meta.get("estimatedTime") or p.get("estimated_time") or "",
+            concepts=p.get("concepts") or meta.get("topics") or [],
+            companies=meta.get("companies") or p.get("companies") or [],
             status=problem_status,
             is_ai_recommended=is_ai_recommended,
         ))
@@ -94,21 +109,23 @@ async def get_problem(slug: str):
     problem = fetch_problem_by_slug(slug)
     if not problem:
         raise HTTPException(status_code=404, detail="Problem not found")
+    
+    meta = mock_problems_metadata.get(slug) or {}
     return Problem(
         id=problem["id"],
         title=problem["title"],
         slug=problem.get("slug", ""),
         difficulty=problem["difficulty"],
         description=problem.get("description", ""),
-        constraints=problem.get("constraints"),
-        examples=problem.get("examples") or [],
-        concepts=problem.get("concepts") or [],
-        acceptance_rate=round(problem.get("acceptance_rate", 0), 1) if problem.get("acceptance_rate") else 0.0,
-        estimated_time=problem.get("estimated_time", ""),
-        companies=problem.get("companies") or [],
-        starter_code=problem.get("starter_code") or {},
-        hints=problem.get("hints") or [],
-        editorial=problem.get("editorial"),
+        constraints=problem.get("constraints") or "\n".join(meta.get("constraints", [])),
+        examples=problem.get("examples") or meta.get("examples") or [],
+        concepts=problem.get("concepts") or meta.get("topics") or [],
+        acceptance_rate=round(meta.get("acceptanceRate") or problem.get("acceptance_rate") or 0.0, 1),
+        estimated_time=meta.get("estimatedTime") or problem.get("estimated_time") or "",
+        companies=meta.get("companies") or problem.get("companies") or [],
+        starter_code=meta.get("starterCode") or problem.get("starter_code") or {},
+        hints=meta.get("hints") or problem.get("hints") or [],
+        editorial=meta.get("editorial") or problem.get("editorial"),
     )
 
 
