@@ -9,7 +9,7 @@ interface ProgressProps {
 
 export const Progress = ({ value, className = '', color = 'primary' }: ProgressProps) => {
   const colors = {
-    primary: 'bg-indigo-500',
+    primary: 'bg-indigo-600',
     secondary: 'bg-cyan-500',
     success: 'bg-emerald-500',
     warning: 'bg-amber-500',
@@ -17,7 +17,7 @@ export const Progress = ({ value, className = '', color = 'primary' }: ProgressP
   };
 
   return (
-    <div className={`w-full bg-slate-800 rounded-full h-2 overflow-hidden ${className}`}>
+    <div className={`w-full bg-slate-950/50 border border-slate-850 rounded-full h-2.5 overflow-hidden p-[1px] ${className}`}>
       <div
         className={`h-full rounded-full transition-all duration-500 ease-out ${colors[color]}`}
         style={{ width: `${Math.min(100, Math.max(0, value))}%` }}
@@ -57,8 +57,8 @@ export const ProgressRing = ({
   };
 
   const strokeColors = {
-    primary: 'stroke-indigo-500',
-    secondary: 'stroke-cyan-500',
+    primary: 'stroke-indigo-600',
+    secondary: 'stroke-cyan-550',
     success: 'stroke-emerald-500',
     warning: 'stroke-amber-500',
     danger: 'stroke-rose-500',

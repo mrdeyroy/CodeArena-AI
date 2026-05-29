@@ -11,15 +11,15 @@ export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElemen
 
 export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className = '', variant = 'primary', size = 'md', icon: Icon, iconPosition = 'left', isLoading, children, ...props }, ref) => {
-    const baseStyles = 'inline-flex items-center justify-center font-medium rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 disabled:opacity-50 disabled:pointer-events-none cursor-pointer';
+    const baseStyles = 'inline-flex items-center justify-center font-semibold rounded-lg transition-all duration-150 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-indigo-500/10 active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none cursor-pointer select-none';
     
     const variants = {
-      primary: 'bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-600/10 hover:shadow-indigo-600/20 active:scale-[0.98]',
-      secondary: 'bg-slate-800 hover:bg-slate-700/80 text-slate-100 border border-slate-700/80 active:scale-[0.98]',
-      outline: 'bg-transparent border border-slate-700 text-slate-300 hover:bg-slate-800 hover:text-white',
-      ghost: 'bg-transparent text-slate-400 hover:bg-slate-800/60 hover:text-slate-100',
-      danger: 'bg-rose-600 hover:bg-rose-700 text-white shadow-lg shadow-rose-600/10 active:scale-[0.98]',
-      success: 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-lg shadow-emerald-600/10 active:scale-[0.98]',
+      primary: 'bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm border border-indigo-700 hover:border-indigo-800 focus-visible:ring-indigo-500/20',
+      secondary: 'bg-slate-800 hover:bg-slate-700 text-slate-100 border border-slate-700 shadow-sm focus-visible:ring-slate-700/30',
+      outline: 'bg-transparent border border-slate-700 text-slate-300 hover:bg-slate-800 hover:text-slate-100 hover:border-slate-600 shadow-sm focus-visible:ring-slate-700/20',
+      ghost: 'bg-transparent text-slate-400 hover:bg-slate-800 hover:text-slate-200 focus-visible:ring-slate-800/50',
+      danger: 'bg-rose-600 hover:bg-rose-700 text-white shadow-sm border border-rose-700 hover:border-rose-800 focus-visible:ring-rose-500/20',
+      success: 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm border border-emerald-700 hover:border-emerald-800 focus-visible:ring-emerald-500/20',
     };
 
     const sizes = {
