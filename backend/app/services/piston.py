@@ -218,7 +218,7 @@ class PistonService:
                     memory=0,
                 )
 
-            elif "c" == lang:
+            elif lang == "c" or lang == "language.c" or lang.endswith(".c"):
                 # Compile step
                 c_file = temp_dir / "solution.c"
                 c_file.write_text(request.code, encoding="utf-8")
