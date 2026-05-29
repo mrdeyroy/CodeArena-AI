@@ -9,8 +9,8 @@
     "backend": {
       "root": "backend",
       "routePrefix": "/_/backend",
-      "entrypoint": "app/main.py",
-      "framework": "fastapi"
+      "entrypoint": "api/index.py",
+      "builder": "@vercel/python"
     }
   },
   "buildCommand": "cd frontend && npm run build",
