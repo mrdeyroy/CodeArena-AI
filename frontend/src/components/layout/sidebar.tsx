@@ -45,7 +45,7 @@ export const Sidebar = () => {
     >
       {/* Brand Header */}
       <div className="flex items-center justify-between h-16 px-5 border-b border-slate-800/80">
-        <Link href="/dashboard" className="flex items-center gap-3">
+        <Link href="/" className="flex items-center gap-3">
           <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-indigo-600 shadow-md shadow-indigo-600/30">
             <span className="font-black text-sm text-white">CA</span>
           </div>
