@@ -4,6 +4,9 @@ import * as React from 'react';
 import { motion } from 'framer-motion';
 import { useVoiceInterviewStore } from '@/store/voice-interview-store';
 
+const RANDOM_HEIGHTS = [20, 35, 15, 42, 28, 12, 38, 25, 30, 18, 40, 22];
+const RANDOM_DURATIONS = [0.6, 0.8, 0.5, 0.7, 0.9, 0.6, 0.5, 0.8, 0.7, 0.6, 0.9, 0.5];
+
 export const SpeechIndicator = () => {
   const { aiSpeakingState, isMuted } = useVoiceInterviewStore();
   const barCount = 12;
@@ -19,11 +22,13 @@ export const SpeechIndicator = () => {
 
     switch (aiSpeakingState) {
       case 'listening': // Candidate is speaking
+        const randHeight = RANDOM_HEIGHTS[index % RANDOM_HEIGHTS.length];
+        const randDuration = RANDOM_DURATIONS[index % RANDOM_DURATIONS.length];
         return {
-          height: ['8px', `${12 + Math.random() * 32}px`, '8px'],
+          height: ['8px', `${randHeight}px`, '8px'],
           transition: {
             repeat: Infinity,
-            duration: 0.5 + Math.random() * 0.5,
+            duration: randDuration,
             ease: 'easeInOut' as const,
             delay: index * 0.05,
           }

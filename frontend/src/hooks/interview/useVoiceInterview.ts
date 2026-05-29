@@ -11,16 +11,23 @@ export const useVoiceInterview = () => {
   const speech = useSpeechRecognition();
   const tts = useTextToSpeech();
 
-  const [questions, setQuestions] = React.useState<string[]>([]);
   const [currentIdx, setCurrentIdx] = React.useState(0);
   const [questionStartTime, setQuestionStartTime] = React.useState<number>(0);
+  const [prevType, setPrevType] = React.useState(store.interviewType);
 
-  // Initialize questions list
-  React.useEffect(() => {
-    const list = voiceInterviewService.getQuestionsForType(store.interviewType);
-    setQuestions(list);
-    setCurrentIdx(0);
+  // Derive questions array synchronously
+  const questions = React.useMemo(() => {
+    return voiceInterviewService.getQuestionsForType(store.interviewType);
   }, [store.interviewType]);
+
+  // Reset current index if interview type changes
+  if (store.interviewType !== prevType) {
+    setPrevType(store.interviewType);
+    setCurrentIdx(0);
+  }
+
+  // Ref to break circular dependency
+  const processCandidateResponseRef = React.useRef<(text: string) => Promise<void>>(null as any);
 
   const handleNextInterviewerQuestion = React.useCallback((questionText: string) => {
     store.setAISpeakingState('speaking');
@@ -35,7 +42,7 @@ export const useVoiceInterview = () => {
       if (!store.isMuted) {
         speech.startListening((candidateText) => {
           // Trigger when speech stops speaking
-          handleProcessCandidateResponse(candidateText);
+          processCandidateResponseRef.current?.(candidateText);
         });
       }
     });
@@ -44,11 +51,10 @@ export const useVoiceInterview = () => {
   const startInterview = React.useCallback(() => {
     store.resetSession();
     setCurrentIdx(0);
-    const list = voiceInterviewService.getQuestionsForType(store.interviewType);
-    if (list.length > 0) {
-      handleNextInterviewerQuestion(list[0]);
+    if (questions.length > 0) {
+      handleNextInterviewerQuestion(questions[0]);
     }
-  }, [store, handleNextInterviewerQuestion]);
+  }, [store, questions, handleNextInterviewerQuestion]);
 
   const handleProcessCandidateResponse = React.useCallback(async (text: string) => {
     if (!text.trim()) return;
@@ -77,6 +83,11 @@ export const useVoiceInterview = () => {
       speech.stopListening();
     }
   }, [speech, store, currentIdx, questions, questionStartTime, handleNextInterviewerQuestion]);
+
+  // Sync ref
+  React.useEffect(() => {
+    processCandidateResponseRef.current = handleProcessCandidateResponse;
+  }, [handleProcessCandidateResponse]);
 
   const replayQuestion = React.useCallback(() => {
     if (questions[currentIdx]) {

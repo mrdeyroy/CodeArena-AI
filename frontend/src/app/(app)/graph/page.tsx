@@ -92,6 +92,10 @@ export default function SkillGraphPage() {
     return { x: 250, y: 50 };
   };
 
+  const nstatusToAnimated = (status?: string) => {
+    return status === 'mastered' || status === 'learning';
+  };
+
   React.useEffect(() => {
     async function load() {
       try {
@@ -122,10 +126,6 @@ export default function SkillGraphPage() {
     }
     load();
   }, []);
-
-  const nstatusToAnimated = (status?: string) => {
-    return status === 'mastered' || status === 'learning';
-  };
 
   const handleNodeClick = async (_: any, node: Node) => {
     const baseNode = loadedNodes.find(n => n.id === node.id);
