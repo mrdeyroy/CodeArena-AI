@@ -70,34 +70,86 @@ const nodeTypes = {
 // ==========================================
 // Main Graph Page Component
 // ==========================================
+import { fetchGraph, fetchNodeInsights } from '@/lib/api';
+import { SkillNode as SkillNodeType } from '@/lib/types';
+
 export default function SkillGraphPage() {
   const [selectedNode, setSelectedNode] = React.useState<any>(null);
+  const [loadedNodes, setLoadedNodes] = React.useState<SkillNodeType[]>([]);
+  const [nodes, setNodes] = React.useState<Node[]>([]);
+  const [edges, setEdges] = React.useState<Edge[]>([]);
+  const [loading, setLoading] = React.useState(true);
 
   // Position nodes logically to represent an algorithm syllabus tree
-  const initialNodes: Node[] = [
-    { id: 'node_arrays', type: 'skill', position: { x: 250, y: 50 }, data: { label: 'Arrays & Hashing', status: 'mastered', mastery: 92 } },
-    { id: 'node_pointers', type: 'skill', position: { x: 250, y: 150 }, data: { label: 'Two Pointers', status: 'mastered', mastery: 85 } },
-    { id: 'node_sliding', type: 'skill', position: { x: 250, y: 250 }, data: { label: 'Sliding Window', status: 'learning', mastery: 65 } },
-    { id: 'node_trees', type: 'skill', position: { x: 100, y: 350 }, data: { label: 'Binary Trees', status: 'learning', mastery: 50 } },
-    { id: 'node_graphs', type: 'skill', position: { x: 100, y: 460 }, data: { label: 'Graphs', status: 'weak', mastery: 35 } },
-    { id: 'node_dp', type: 'skill', position: { x: 400, y: 350 }, data: { label: 'Dynamic Programming', status: 'weak', mastery: 28 } },
-    { id: 'node_greedy', type: 'skill', position: { x: 250, y: 580 }, data: { label: 'Greedy Algorithms', status: 'locked', mastery: 0 } },
-  ];
+  const positionNode = (label: string) => {
+    if (label.includes('Arrays') || label.includes('Hashing')) return { x: 250, y: 50 };
+    if (label.includes('Two Pointers') || label.includes('Pointers')) return { x: 250, y: 150 };
+    if (label.includes('Sliding Window') || label.includes('Window')) return { x: 250, y: 250 };
+    if (label.includes('Binary Trees') || label.includes('Trees')) return { x: 100, y: 350 };
+    if (label.includes('Graphs')) return { x: 100, y: 460 };
+    if (label.includes('Dynamic Programming') || label.includes('DP')) return { x: 400, y: 350 };
+    if (label.includes('Greedy Algorithms') || label.includes('Greedy')) return { x: 250, y: 580 };
+    return { x: 250, y: 50 };
+  };
 
-  const initialEdges: Edge[] = [
-    { id: 'e1', source: 'node_arrays', target: 'node_pointers', animated: true },
-    { id: 'e2', source: 'node_pointers', target: 'node_sliding', animated: true },
-    { id: 'e3', source: 'node_sliding', target: 'node_trees', animated: true },
-    { id: 'e4', source: 'node_trees', target: 'node_graphs', animated: true },
-    { id: 'e5', source: 'node_sliding', target: 'node_dp', animated: true },
-    { id: 'e6', source: 'node_graphs', target: 'node_greedy' },
-    { id: 'e7', source: 'node_dp', target: 'node_greedy' },
-  ];
+  React.useEffect(() => {
+    async function load() {
+      try {
+        const { nodes: backendNodes, edges: backendEdges } = await fetchGraph();
+        setLoadedNodes(backendNodes);
+        
+        const initialNodes: Node[] = backendNodes.map((n) => ({
+          id: n.id,
+          type: 'skill',
+          position: positionNode(n.label),
+          data: { label: n.label, status: n.status, mastery: n.mastery }
+        }));
+        
+        const initialEdges: Edge[] = backendEdges.map((e, idx) => ({
+          id: e.id,
+          source: e.source,
+          target: e.target,
+          animated: nstatusToAnimated(backendNodes.find(node => node.id === e.source)?.status)
+        }));
 
-  const handleNodeClick = (_: any, node: Node) => {
-    const fullNodeInfo = mockSkillNodes.find(n => n.id === node.id);
-    if (fullNodeInfo) {
-      setSelectedNode(fullNodeInfo);
+        setNodes(initialNodes);
+        setEdges(initialEdges);
+      } catch (e) {
+        console.error('Failed to load graph:', e);
+      } finally {
+        setLoading(false);
+      }
+    }
+    load();
+  }, []);
+
+  const nstatusToAnimated = (status?: string) => {
+    return status === 'mastered' || status === 'learning';
+  };
+
+  const handleNodeClick = async (_: any, node: Node) => {
+    const baseNode = loadedNodes.find(n => n.id === node.id);
+    if (!baseNode) return;
+    
+    setSelectedNode({
+      ...baseNode,
+      aiInsight: 'Analyzing mastery gaps via AI Coach...',
+      recommendedProblems: []
+    });
+
+    try {
+      const insights = await fetchNodeInsights(node.id);
+      setSelectedNode({
+        ...baseNode,
+        aiInsight: insights.ai_insight,
+        recommendedProblems: insights.recommended_problems || []
+      });
+    } catch (e) {
+      console.error(e);
+      setSelectedNode({
+        ...baseNode,
+        aiInsight: 'Weakness detected. Focus on cyclic DFS path structures to improve mastery.'
+      });
     }
   };
 
@@ -135,30 +187,37 @@ export default function SkillGraphPage() {
 
         {/* Canvas Wrapper */}
         <div className="flex-1 bg-slate-950/20 relative">
-          <ReactFlow
-            nodes={initialNodes}
-            edges={initialEdges}
-            nodeTypes={nodeTypes}
-            onNodeClick={handleNodeClick}
-            fitView
-            fitViewOptions={{ padding: 0.2 }}
-            minZoom={0.5}
-            maxZoom={1.5}
-          >
-            <Background color="#334155" gap={24} size={1} />
-            <Controls className="!bg-slate-900 !border-slate-800 !text-slate-400" />
-            <MiniMap 
-              style={{ height: 100, width: 140, backgroundColor: '#0f172a', border: '1px solid #334155', borderRadius: 8 }} 
-              nodeColor={(node) => {
-                const status = node.data?.status;
-                if (status === 'mastered') return '#10b981';
-                if (status === 'learning') return '#6366f1';
-                if (status === 'weak') return '#f59e0b';
-                return '#1e293b';
-              }}
-              maskColor="rgba(15, 23, 42, 0.6)"
-            />
-          </ReactFlow>
+          {loading ? (
+            <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 text-slate-500 bg-slate-950/20">
+              <div className="animate-spin rounded-full h-6 w-6 border-t-2 border-indigo-500" />
+              <span className="text-[9px] font-bold uppercase tracking-wider">Loading Skill Graph...</span>
+            </div>
+          ) : (
+            <ReactFlow
+              nodes={nodes}
+              edges={edges}
+              nodeTypes={nodeTypes}
+              onNodeClick={handleNodeClick}
+              fitView
+              fitViewOptions={{ padding: 0.2 }}
+              minZoom={0.5}
+              maxZoom={1.5}
+            >
+              <Background color="#334155" gap={24} size={1} />
+              <Controls className="!bg-slate-900 !border-slate-800 !text-slate-400" />
+              <MiniMap 
+                style={{ height: 100, width: 140, backgroundColor: '#0f172a', border: '1px solid #334155', borderRadius: 8 }} 
+                nodeColor={(node) => {
+                  const status = node.data?.status;
+                  if (status === 'mastered') return '#10b981';
+                  if (status === 'learning') return '#6366f1';
+                  if (status === 'weak') return '#f59e0b';
+                  return '#1e293b';
+                }}
+                maskColor="rgba(15, 23, 42, 0.6)"
+              />
+            </ReactFlow>
+          )}
         </div>
       </div>
 

@@ -20,6 +20,7 @@ import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { mockWeaknesses, mockCurrentUser } from '@/lib/mock-data';
 import Link from 'next/link';
+import { sendCoachChat } from '@/lib/api';
 
 export default function AICoachPage() {
   const [activeSection, setActiveSection] = React.useState<'chat' | 'weaknesses' | 'plans' | 'career'>('chat');
@@ -36,28 +37,21 @@ export default function AICoachPage() {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  const handleSend = (text: string) => {
+  const handleSend = async (text: string) => {
     if (!text.trim()) return;
     const now = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     setMessages(prev => [...prev, { role: 'user', text, time: now }]);
     setInputValue('');
     setIsTyping(true);
 
-    setTimeout(() => {
-      setIsTyping(false);
-      let reply = "Let's work through that. We can generate some custom problem modules or examine specific complex boundaries.";
-      if (text.toLowerCase().includes('dp') || text.toLowerCase().includes('dynamic')) {
-        reply = "Understood. For Dynamic Programming, your tabulation accuracy is at 28%. I recommend we solve 'Edit Distance' first. It provides an excellent baseline for matching two-string alignments. Would you like a step-by-step hint for setting up the 2D DP matrix?";
-      } else if (text.toLowerCase().includes('graph') || text.toLowerCase().includes('traverse')) {
-        reply = "Graph traversals (BFS/DFS) are currently contributing to a 42% solution accuracy. I suggest practicing 'Merge k Sorted Lists' which models multiple pointer heads, and moving into cyclic graph path detections next. Try focusing on keeping track of visited set states.";
-      } else if (text.toLowerCase().includes('plan') || text.toLowerCase().includes('study')) {
-        reply = "I've structured a 3-part custom plan for you:\n1. Solve 2 Two-Pointer modules to ensure index boundaries are solid.\n2. Complete 'Edit Distance' using iterative tabulation.\n3. Take a 15-minute mock interview on Arrays & Matrices to verify performance.\nShall we get started?";
-      } else if (text.toLowerCase().includes('career') || text.toLowerCase().includes('google') || text.toLowerCase().includes('meta')) {
-        reply = "Your interview readiness index is 88%. This puts you in a great position for L3/L4 roles at Google or E3/E4 at Meta. However, Meta sponsored loops heavily target graph cycle configurations, while Google focuses on optimization efficiency. I recommend completing 3 hard-difficulty tree/graph modules.";
-      }
-
+    try {
+      const reply = await sendCoachChat(text);
       setMessages(prev => [...prev, { role: 'assistant', text: reply, time: now }]);
-    }, 850);
+    } catch (e) {
+      setMessages(prev => [...prev, { role: 'assistant', text: "I'm having trouble connecting to the AI Coach service. Please try again.", time: now }]);
+    } finally {
+      setIsTyping(false);
+    }
   };
 
   const sections = [

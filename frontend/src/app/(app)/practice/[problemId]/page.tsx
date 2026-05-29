@@ -32,19 +32,23 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Tabs } from '@/components/ui/tabs';
 import { Progress } from '@/components/ui/progress';
+import { fetchProblemBySlug, runProblem, submitProblem, sendCoachChat } from '@/lib/api';
+import { Problem } from '@/lib/types';
 
 export default function CodingWorkspacePage() {
   const params = useParams();
   const router = useRouter();
   const problemSlug = params?.problemId as string;
-  const { problems, submitCode } = useUserStore();
+  const { problems, addSubmission } = useUserStore();
 
-  // Find matching problem
-  const problem = problems.find(p => p.slug === problemSlug) || problems[0];
+  // Find matching problem in cache initially, fetch updated details
+  const initialProblem = problems.find(p => p.slug === problemSlug) || problems[0];
+  const [problem, setProblem] = React.useState<Problem | null>(initialProblem || null);
+  const [loading, setLoading] = React.useState(!initialProblem);
 
   // Coding Workspace States
   const [selectedLanguage, setSelectedLanguage] = React.useState('python');
-  const [editorCode, setEditorCode] = React.useState(problem.starterCode[selectedLanguage] || problem.starterCode['python'] || '');
+  const [editorCode, setEditorCode] = React.useState(problem?.starterCode[selectedLanguage] || problem?.starterCode['python'] || '');
   const [leftActiveTab, setLeftActiveTab] = React.useState('description');
   const [consoleOpen, setConsoleOpen] = React.useState(true);
   const [consoleActiveTab, setConsoleActiveTab] = React.useState('input');
@@ -63,15 +67,34 @@ export default function CodingWorkspacePage() {
   const [confidence, setConfidence] = React.useState(50);
 
   // AI Mentor Chat in Workspace
-  const [aiMentorMessages, setAiMentorMessages] = React.useState<Array<{ role: 'user' | 'assistant'; text: string }>>([
-    { role: 'assistant', text: `Hi, I am your dedicated Coding Mentor. I have full context on "${problem.title}". Let me know if you need help optimization steps, dry runs, or line-by-line debugging.` }
-  ]);
+  const [aiMentorMessages, setAiMentorMessages] = React.useState<Array<{ role: 'user' | 'assistant'; text: string }>>([]);
   const [aiInputValue, setAiInputValue] = React.useState('');
   const [aiIsTyping, setAiIsTyping] = React.useState(false);
 
+  // Fetch problem details from backend
+  React.useEffect(() => {
+    async function load() {
+      try {
+        const p = await fetchProblemBySlug(problemSlug);
+        setProblem(p);
+        // Load starter code
+        setEditorCode(p.starterCode[selectedLanguage] || p.starterCode['python'] || '');
+        // Initial assistant message
+        setAiMentorMessages([
+          { role: 'assistant', text: `Hi, I am your dedicated Coding Mentor. I have full context on "${p.title}". Let me know if you need help optimization steps, dry runs, or line-by-line debugging.` }
+        ]);
+      } catch (e) {
+        console.error('Failed to load problem:', e);
+      } finally {
+        setLoading(false);
+      }
+    }
+    load();
+  }, [problemSlug]);
+
   // Sync starter code when language switches
   React.useEffect(() => {
-    if (problem.starterCode[selectedLanguage]) {
+    if (problem && problem.starterCode[selectedLanguage]) {
       setEditorCode(problem.starterCode[selectedLanguage]);
     }
   }, [selectedLanguage, problem]);
@@ -93,113 +116,147 @@ export default function CodingWorkspacePage() {
     return `${m}:${s}`;
   };
 
-  // Run Code logic
+  // Run Code logic via backend
   const handleRunCode = async () => {
+    if (!problem) return;
     setIsRunning(true);
     setConsoleOpen(true);
     setConsoleActiveTab('results');
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    setIsRunning(false);
-    
-    // Simulate simple correct output if complement hashing is present
-    const includesHash = editorCode.includes('dict') || editorCode.includes('Map') || editorCode.includes('hash');
-    
-    setTestResults({
-      status: 'Accepted',
-      runtime: '12ms',
-      memory: '14.2 MB',
-      casesPassed: 3,
-      casesTotal: 3,
-      outputs: [
-        { input: 'nums = [2,7,11,15], target = 9', expected: '[0,1]', actual: '[0,1]', passed: true },
-        { input: 'nums = [3,2,4], target = 6', expected: '[1,2]', actual: '[1,2]', passed: true },
-        { input: 'nums = [3,3], target = 6', expected: '[0,1]', actual: includesHash ? '[0,1]' : '[0,1]', passed: true }
-      ]
-    });
+    try {
+      const res = await runProblem(problem.id, selectedLanguage, editorCode, customInput);
+      const mappedStatus = res.status === 'accepted' ? 'Accepted' : (res.status === 'wrong_answer' ? 'Wrong Answer' : res.status.replace(/_/g, ' '));
+      
+      setTestResults({
+        status: mappedStatus,
+        runtime: res.runtime ? `${Math.round(res.runtime * 1000)}ms` : '0ms',
+        memory: res.memory ? `${(res.memory / 1024).toFixed(1)} MB` : '0 MB',
+        outputs: [
+          { 
+            input: customInput, 
+            expected: '', 
+            actual: res.stdout || '', 
+            passed: res.status === 'accepted' 
+          }
+        ],
+        stderr: res.stderr || '',
+      });
+    } catch (e) {
+      console.error(e);
+      setTestResults({
+        status: 'Runtime Error',
+        runtime: '0ms',
+        memory: '0 MB',
+        stderr: 'Failed to run code. Verify backend connection.',
+      });
+    } finally {
+      setIsRunning(false);
+    }
   };
 
-  // Submit Code logic
+  // Submit Code logic via backend
   const handleSubmitCode = async () => {
+    if (!problem) return;
     setIsSubmitting(true);
     setConsoleOpen(true);
     setConsoleActiveTab('results');
-    await new Promise(resolve => setTimeout(resolve, 1400));
-    setIsSubmitting(false);
-
-    const includesHash = editorCode.includes('dict') || editorCode.includes('Map') || editorCode.includes('hash');
-    const isAccepted = includesHash || Math.random() > 0.3; // High chance of success for UX demo
-
-    if (isAccepted) {
-      setTestResults({
-        status: 'Accepted',
-        runtime: '8ms',
-        memory: '13.9 MB',
-        casesPassed: 45,
-        casesTotal: 45,
-      });
-      submitCode(problem.id, selectedLanguage, editorCode, 'Accepted', '8ms', '13.9 MB', 45, 45);
+    try {
+      const res = await submitProblem(problem.id, selectedLanguage, editorCode);
+      const mappedStatus = res.status === 'accepted' ? 'Accepted' : 'Wrong Answer';
       
-      // AI triggers congratulations message
-      setAiMentorMessages(prev => [...prev, {
-        role: 'assistant',
-        text: `Superb! You solved "${problem.title}" successfully with ${selectedLanguage}. Your hash complementary logic is highly optimal O(N) time. Would you like to check the space-tabulated equivalent?`
-      }]);
-    } else {
       setTestResults({
-        status: 'Wrong Answer',
-        runtime: '18ms',
-        memory: '14.5 MB',
-        casesPassed: 38,
-        casesTotal: 45,
-        failedCase: 'nums = [3,3], target = 6. Expected: [0,1], Got: [0,0]'
+        status: mappedStatus,
+        runtime: res.runtime ? `${Math.round(res.runtime * 1000)}ms` : '0ms',
+        memory: res.memory ? `${(res.memory / 1024).toFixed(1)} MB` : '0 MB',
+        casesPassed: res.passed_tests || 0,
+        casesTotal: res.total_tests || 0,
       });
-      submitCode(problem.id, selectedLanguage, editorCode, 'Wrong Answer', '18ms', '14.5 MB', 38, 45);
-      
-      // AI triggers hint
-      setAiMentorMessages(prev => [...prev, {
-        role: 'assistant',
-        text: `I noticed your submission failed on identical values (like [3,3] matching index pairs). Make sure you don't return the same element index twice! Keep track of complement matches properly.`
-      }]);
+
+      addSubmission({
+        id: res.submission_id || `sub_${Date.now()}`,
+        problemId: problem.id,
+        language: selectedLanguage,
+        code: editorCode,
+        status: mappedStatus,
+        runtime: res.runtime ? `${Math.round(res.runtime * 1000)}ms` : '0ms',
+        memory: res.memory ? `${(res.memory / 1024).toFixed(1)} MB` : '0 MB',
+        passedCases: res.passed_tests || 0,
+        totalCases: res.total_tests || 0,
+        submittedAt: new Date().toISOString(),
+      });
+
+      // Trigger AI Coach analysis
+      setAiIsTyping(true);
+      try {
+        const feedback = await sendCoachChat(
+          `Student submitted code for problem "${problem.title}". Status: ${mappedStatus}. Code:\n${editorCode}`
+        );
+        setAiMentorMessages(prev => [...prev, { role: 'assistant', text: feedback }]);
+      } catch (e) {
+        setAiMentorMessages(prev => [...prev, {
+          role: 'assistant',
+          text: mappedStatus === 'Accepted'
+            ? `Superb! You solved "${problem.title}" successfully with ${selectedLanguage}.`
+            : `I noticed your submission failed. Take a look at your edge conditions.`
+        }]);
+      } finally {
+        setAiIsTyping(false);
+      }
+    } catch (e) {
+      console.error(e);
+      setTestResults({
+        status: 'Compile Error',
+        runtime: '0ms',
+        memory: '0 MB',
+        stderr: 'Code execution timed out or server failed.',
+      });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
-  // AI assistant interactions
+  // AI assistant interactions via backend
   const handleAICommand = async (action: string) => {
+    if (!problem) return;
     setAiIsTyping(true);
-    await new Promise(resolve => setTimeout(resolve, 800));
-    setAiIsTyping(false);
-
-    let text = '';
+    
+    let prompt = '';
     if (action === 'explain') {
-      text = `Here is a breakdown of "${problem.title}":\nYou need to find two distinct indices whose values sum to a specific target.\n- Brute Force: Iterate double loops to find sum, O(N^2) time.\n- Optimal: Use a Hash Map to record indices. For each number x, verify if (target - x) is in the dictionary. If so, return [map[target - x], current_index]. O(N) runtime.`;
+      prompt = `Explain the problem "${problem.title}" and guide me on how to approach it.`;
     } else if (action === 'hint') {
-      text = `Try iterating the array once. Instead of looking forward for complements, look backward by checking if the complementary value target - nums[i] is already saved in your hash table.`;
+      prompt = `Provide a subtle hint to solve "${problem.title}". Do not spoil the solution code.`;
     } else if (action === 'debug') {
-      text = `Scanning your editor code...\nYour logic looks clean! Ensure that you are storing numbers in your dictionary AFTER verifying complement existences, to prevent using the same index element twice.`;
+      prompt = `Identify any syntax, logic, or algorithmic bugs in this code for "${problem.title}". Code:\n${editorCode}`;
     } else if (action === 'optimize') {
-      text = `To minimize space overhead: in C++/Go we can reserve map memory beforehand (e.g. \`make(map[int]int, len(nums))\`) to avoid re-allocating dynamic buckets, which speeds up CPU runtime.`;
+      prompt = `How can I improve the time and space complexity of this code? Code:\n${editorCode}`;
     }
 
-    setAiMentorMessages(prev => [...prev, { role: 'assistant', text }]);
+    try {
+      const reply = await sendCoachChat(prompt);
+      setAiMentorMessages(prev => [...prev, { role: 'assistant', text: reply }]);
+    } catch (e) {
+      setAiMentorMessages(prev => [...prev, { role: 'assistant', text: 'Sorry, I failed to generate a response. Please try again.' }]);
+    } finally {
+      setAiIsTyping(false);
+    }
   };
 
-  const handleSendAIChat = (e: React.FormEvent) => {
+  const handleSendAIChat = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!aiInputValue.trim()) return;
+    if (!aiInputValue.trim() || !problem) return;
 
     const userText = aiInputValue;
     setAiMentorMessages(prev => [...prev, { role: 'user', text: userText }]);
     setAiInputValue('');
     setAiIsTyping(true);
 
-    setTimeout(() => {
-      setAiIsTyping(false);
-      let reply = "That's an interesting approach. Let's analyze its runtime complexity. A dictionary implementation allows single linear lookup O(1) inside our loop.";
-      if (userText.toLowerCase().includes('time') || userText.toLowerCase().includes('complexity')) {
-        reply = "The time complexity is O(N) because we iterate the array of size N exactly once. The space complexity is O(N) because, in the worst case, we store N elements in our Hash Map.";
-      }
+    try {
+      const reply = await sendCoachChat(`Problem context: "${problem.title}". User message: ${userText}`);
       setAiMentorMessages(prev => [...prev, { role: 'assistant', text: reply }]);
-    }, 700);
+    } catch (e) {
+      setAiMentorMessages(prev => [...prev, { role: 'assistant', text: 'I am unable to answer right now. Please try again shortly.' }]);
+    } finally {
+      setAiIsTyping(false);
+    }
   };
 
   const leftTabs = [
@@ -207,6 +264,15 @@ export default function CodingWorkspacePage() {
     { id: 'hints', label: 'Hints', icon: Lightbulb },
     { id: 'editorial', label: 'Editorial', icon: BookOpen },
   ];
+
+  if (loading || !problem) {
+    return (
+      <div className="h-[calc(100vh-5.5rem)] bg-slate-950 flex flex-col items-center justify-center gap-3">
+        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-indigo-500" />
+        <span className="text-[10px] text-slate-500 font-mono font-bold uppercase tracking-wider">Loading coding workspace...</span>
+      </div>
+    );
+  }
 
   return (
     <div className="h-[calc(100vh-5.5rem)] flex flex-col md:flex-row gap-4 max-w-[1600px] mx-auto overflow-hidden">
@@ -297,7 +363,7 @@ export default function CodingWorkspacePage() {
           <div className="flex items-center justify-between px-4 py-2 border-b border-slate-800 bg-slate-950/40">
             <div className="flex items-center gap-2">
               <select
-                className="bg-slate-900 border border-slate-800 rounded-md px-2 py-1 text-xs text-slate-300 font-semibold focus:outline-none"
+                className="bg-slate-950 border border-slate-800 rounded-lg px-2.5 py-1.5 text-xs text-slate-350 font-semibold focus:outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 hover:border-slate-700 transition-all duration-150 cursor-pointer shadow-sm"
                 value={selectedLanguage}
                 onChange={(e) => setSelectedLanguage(e.target.value)}
               >
@@ -310,7 +376,7 @@ export default function CodingWorkspacePage() {
               
               <button 
                 onClick={() => setEditorCode(problem.starterCode[selectedLanguage] || '')}
-                className="p-1 hover:bg-slate-800 rounded-md text-slate-500 hover:text-slate-300"
+                className="p-1.5 hover:bg-slate-800 hover:text-slate-200 rounded-lg text-slate-400 transition-colors cursor-pointer"
                 title="Reset code template"
               >
                 <RotateCcw className="w-3.5 h-3.5" />
@@ -405,7 +471,7 @@ export default function CodingWorkspacePage() {
                 <div className="space-y-2">
                   <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Configure Input Values</p>
                   <textarea
-                    className="w-full bg-slate-950 border border-slate-800 rounded-lg p-2 text-slate-300 focus:outline-none focus:border-indigo-500/80 resize-none h-24"
+                    className="w-full bg-slate-950 border border-slate-800 rounded-lg p-3 text-slate-350 placeholder-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all duration-150 resize-none h-24 shadow-sm"
                     value={customInput}
                     onChange={(e) => setCustomInput(e.target.value)}
                   />
@@ -515,43 +581,43 @@ export default function CodingWorkspacePage() {
         </div>
 
         {/* Prompt shortcuts */}
-        <div className="p-3 border-b border-slate-800 bg-slate-950/20 grid grid-cols-2 gap-1.5 shrink-0">
+        <div className="p-3 border-b border-slate-800 bg-slate-950/20 grid grid-cols-2 gap-2 shrink-0">
           <button
             onClick={() => handleAICommand('explain')}
-            className="flex items-center gap-1 px-2 py-1 bg-slate-950 border border-slate-850 hover:border-slate-700 rounded text-[10px] text-slate-300 font-semibold cursor-pointer justify-center"
+            className="flex items-center gap-1.5 px-2.5 py-1.5 bg-slate-950 border border-slate-800 hover:border-slate-700 hover:text-slate-100 rounded-lg text-[10px] text-slate-350 font-semibold cursor-pointer justify-center transition-all duration-150 shadow-sm"
           >
-            <HelpCircle className="w-3 h-3 text-slate-400" /> Explain Task
+            <HelpCircle className="w-3.5 h-3.5 text-slate-400" /> Explain Task
           </button>
           <button
             onClick={() => handleAICommand('hint')}
-            className="flex items-center gap-1 px-2 py-1 bg-slate-950 border border-slate-850 hover:border-slate-700 rounded text-[10px] text-slate-300 font-semibold cursor-pointer justify-center"
+            className="flex items-center gap-1.5 px-2.5 py-1.5 bg-slate-950 border border-slate-800 hover:border-slate-700 hover:text-slate-100 rounded-lg text-[10px] text-slate-350 font-semibold cursor-pointer justify-center transition-all duration-150 shadow-sm"
           >
-            <Lightbulb className="w-3 h-3 text-indigo-400" /> Give Hint
+            <Lightbulb className="w-3.5 h-3.5 text-indigo-450" /> Give Hint
           </button>
           <button
             onClick={() => handleAICommand('debug')}
-            className="flex items-center gap-1 px-2 py-1 bg-slate-950 border border-slate-850 hover:border-slate-700 rounded text-[10px] text-slate-300 font-semibold cursor-pointer justify-center"
+            className="flex items-center gap-1.5 px-2.5 py-1.5 bg-slate-950 border border-slate-800 hover:border-slate-700 hover:text-slate-100 rounded-lg text-[10px] text-slate-350 font-semibold cursor-pointer justify-center transition-all duration-150 shadow-sm"
           >
-            <Bug className="w-3 h-3 text-rose-455" /> Debug Logic
+            <Bug className="w-3.5 h-3.5 text-rose-400" /> Debug Logic
           </button>
           <button
             onClick={() => handleAICommand('optimize')}
-            className="flex items-center gap-1 px-2 py-1 bg-slate-950 border border-slate-850 hover:border-slate-700 rounded text-[10px] text-slate-300 font-semibold cursor-pointer justify-center"
+            className="flex items-center gap-1.5 px-2.5 py-1.5 bg-slate-950 border border-slate-800 hover:border-slate-700 hover:text-slate-100 rounded-lg text-[10px] text-slate-355 font-semibold cursor-pointer justify-center transition-all duration-150 shadow-sm"
           >
-            <Cpu className="w-3 h-3 text-cyan-405" /> Optimize Space
+            <Cpu className="w-3.5 h-3.5 text-cyan-405" /> Optimize Space
           </button>
         </div>
 
         {/* Conversational Stream */}
         <div className="flex-1 overflow-y-auto p-4 space-y-3.5">
           {aiMentorMessages.map((msg, idx) => (
-            <div key={idx} className={`flex gap-2 ${msg.role === 'assistant' ? 'justify-start' : 'justify-end'}`}>
+            <div key={idx} className={`flex gap-2.5 ${msg.role === 'assistant' ? 'justify-start' : 'justify-end'}`}>
               {msg.role === 'assistant' && (
-                <div className="w-5 h-5 rounded bg-indigo-600 flex items-center justify-center text-white shrink-0 text-[10px]">
-                  <Sparkles className="w-3 h-3" />
+                <div className="w-6 h-6 rounded bg-indigo-650 flex items-center justify-center text-white shrink-0 text-[10px] shadow-sm">
+                  <Sparkles className="w-3.5 h-3.5" />
                 </div>
               )}
-              <div className={`max-w-[85%] rounded-lg p-2.5 text-[11px] leading-relaxed font-semibold whitespace-pre-wrap
+              <div className={`max-w-[85%] rounded-xl p-3 text-xs leading-relaxed font-semibold whitespace-pre-wrap shadow-xs
                 ${msg.role === 'assistant' 
                   ? 'bg-slate-950 border border-slate-850 text-slate-300' 
                   : 'bg-indigo-600 text-white'}`}
@@ -562,11 +628,11 @@ export default function CodingWorkspacePage() {
           ))}
 
           {aiIsTyping && (
-            <div className="flex gap-2 justify-start items-center">
-              <div className="w-5 h-5 rounded bg-indigo-650 flex items-center justify-center text-white shrink-0 text-[10px] animate-pulse">
+            <div className="flex gap-2.5 justify-start items-center">
+              <div className="w-6 h-6 rounded bg-indigo-600 flex items-center justify-center text-white shrink-0 text-[10px] animate-pulse">
                 AI
               </div>
-              <div className="bg-slate-950 border border-slate-850 rounded-lg px-2.5 py-1.5 text-[10px] text-slate-500 font-bold uppercase">
+              <div className="bg-slate-950 border border-slate-850 rounded-lg px-3 py-1.5 text-[10px] text-slate-500 font-bold uppercase tracking-wider animate-pulse">
                 Analyzing complementary indices...
               </div>
             </div>
@@ -575,17 +641,17 @@ export default function CodingWorkspacePage() {
 
         {/* Text Area Input */}
         <div className="p-3 border-t border-slate-850 bg-slate-950/40">
-          <form onSubmit={handleSendAIChat} className="flex gap-1.5">
+          <form onSubmit={handleSendAIChat} className="flex gap-2">
             <input
               type="text"
               placeholder="Ask mentor..."
-              className="flex-1 bg-slate-900 border border-slate-800 rounded-lg px-2.5 py-1.5 text-[11px] text-slate-100 placeholder-slate-500 focus:outline-none focus:border-indigo-500/80"
+              className="flex-1 bg-slate-950 border border-slate-800 rounded-lg px-3.5 py-2 text-xs text-slate-150 placeholder-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all duration-150 shadow-sm"
               value={aiInputValue}
               onChange={(e) => setAiInputValue(e.target.value)}
             />
             <button
               type="submit"
-              className="px-2.5 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-[11px] font-bold rounded-lg cursor-pointer"
+              className="px-3.5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold rounded-lg shadow-sm border border-indigo-700 active:scale-[0.98] transition-all cursor-pointer"
             >
               Ask
             </button>

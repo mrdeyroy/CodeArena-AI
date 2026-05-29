@@ -32,6 +32,7 @@ import {
   Radar, 
   ResponsiveContainer 
 } from 'recharts';
+import { startInterview, submitInterviewResponse, finalizeInterview } from '@/lib/api';
 
 export default function MockInterviewPage() {
   const [sessionState, setSessionState] = React.useState<'select' | 'active' | 'report'>('select');
@@ -45,6 +46,11 @@ export default function MockInterviewPage() {
   const [candidateResponse, setCandidateResponse] = React.useState('');
   const [secondsElapsed, setSecondsElapsed] = React.useState(0);
   const [currentQuestionIndex, setCurrentQuestionIndex] = React.useState(0);
+
+  // API Session tracking
+  const [sessionId, setSessionId] = React.useState<string | null>(null);
+  const [questions, setQuestions] = React.useState<any[]>([]);
+  const [reportData, setReportData] = React.useState<any>(null);
 
   // Timer counter
   React.useEffect(() => {
@@ -66,44 +72,76 @@ export default function MockInterviewPage() {
     return `${m}:${s}`;
   };
 
-  const handleStartInterview = (type: string) => {
+  const handleStartInterview = async (type: string) => {
     setSelectedType(type);
     setTranscript([
-      { 
-        speaker: 'interviewer', 
-        text: type === 'DSA' 
-          ? "Welcome! Let's start with algorithms. How would you design a lookup logic that returns index offsets of elements summing to a target?" 
-          : type === 'System Design'
-            ? "Welcome. Today we will design a highly scalable Notification Service. How would you handle variable messaging loads during traffic spikes?"
-            : "Welcome. Tell me about a time you resolved a major deadlock or performance regression in a code repository." 
-      }
+      { speaker: 'interviewer', text: `Initializing ${type} interview... please wait.` }
     ]);
     setSessionState('active');
+    
+    try {
+      const res = await startInterview(type);
+      setSessionId(res.session_id);
+      
+      const qs = res.questions || [];
+      setQuestions(qs);
+      setCurrentQuestionIndex(0);
+      
+      const firstQ = qs[0]?.text || qs[0] || "Let's begin. Can you tell me how you would design a lookup logic that returns index offsets of elements summing to a target?";
+      setTranscript([
+        { speaker: 'interviewer', text: firstQ }
+      ]);
+    } catch (e) {
+      console.error(e);
+      setTranscript([
+        { speaker: 'interviewer', text: "Failed to initialize the AI Interview session. Please check your backend connection." }
+      ]);
+    }
   };
 
-  const handleSendResponse = () => {
-    if (!candidateResponse.trim()) return;
+  const handleSendResponse = async () => {
+    if (!candidateResponse.trim() || !sessionId) return;
     
-    // Add candidate reply
     const responseText = candidateResponse;
     setTranscript(prev => [...prev, { speaker: 'candidate', text: responseText }]);
     setCandidateResponse('');
+    
+    setTranscript(prev => [...prev, { speaker: 'interviewer', text: "Analyzing response..." }]);
 
-    // Trigger interviewer next question or end loop
-    setTimeout(() => {
-      if (currentQuestionIndex === 0) {
-        let followUp = "Excellent point. Now, how does that solution's memory trade-off compare if the array is already sorted? Can you optimize space?";
-        if (selectedType === 'System Design') {
-          followUp = "Good. What database choices would you make to persist user subscription states? SQL or NoSQL, and why?";
-        }
-        setTranscript(prev => [...prev, { speaker: 'interviewer', text: followUp }]);
-        setCurrentQuestionIndex(1);
+    try {
+      await submitInterviewResponse(sessionId, responseText);
+      const nextIndex = currentQuestionIndex + 1;
+      
+      if (nextIndex < questions.length) {
+        const nextQ = questions[nextIndex]?.text || questions[nextIndex];
+        setCurrentQuestionIndex(nextIndex);
+        setTranscript(prev => {
+          const filtered = prev.filter(t => t.text !== "Analyzing response...");
+          return [...filtered, { speaker: 'interviewer', text: nextQ }];
+        });
       } else {
-        // End interview and generate report
+        setTranscript(prev => {
+          const filtered = prev.filter(t => t.text !== "Analyzing response...");
+          return [...filtered, { speaker: 'interviewer', text: "Interview completed! Compiling overall performance metrics..." }];
+        });
+        
+        const report = await finalizeInterview(sessionId);
+        setReportData(report);
         setSessionState('report');
         setCurrentQuestionIndex(0);
       }
-    }, 900);
+    } catch (e) {
+      console.error(e);
+      setTranscript(prev => {
+        const filtered = prev.filter(t => t.text !== "Analyzing response...");
+        return [...filtered, { speaker: 'interviewer', text: "An error occurred submitting answer. Let's move to the next question." }];
+      });
+      // Fallback transition
+      const nextIndex = currentQuestionIndex + 1;
+      if (nextIndex < questions.length) {
+        setCurrentQuestionIndex(nextIndex);
+      }
+    }
   };
 
   const interviewTypes = [
@@ -113,8 +151,14 @@ export default function MockInterviewPage() {
     { title: 'CS Fundamentals', type: 'CS Fundamentals', desc: 'Operating system scheduling, network protocols (TCP/IP), thread deadlocks, database indexes.', duration: '25 mins' }
   ];
 
-  // Report mock metrics
-  const reportRadarData = [
+  // Report dynamic metrics mapping
+  const reportRadarData = reportData ? [
+    { metric: 'DSA Mastery', score: Math.round(reportData.technical_accuracy * 100) },
+    { metric: 'Communication', score: Math.round(reportData.communication * 100) },
+    { metric: 'Problem Solving', score: Math.round(reportData.depth * 100) },
+    { metric: 'Confidence', score: 80 },
+    { metric: 'System Logic', score: Math.round(reportData.overall_score * 100) }
+  ] : [
     { metric: 'DSA Mastery', score: 90 },
     { metric: 'Communication', score: 82 },
     { metric: 'Problem Solving', score: 88 },
@@ -284,7 +328,9 @@ export default function MockInterviewPage() {
               
               <div className="text-right">
                 <p className="text-[10px] text-slate-500 font-bold uppercase">Composite score</p>
-                <p className="text-xl font-extrabold text-emerald-400">84/100</p>
+                <p className="text-xl font-extrabold text-emerald-400">
+                  {reportData ? Math.round(reportData.overall_score * 100) : 84}/100
+                </p>
               </div>
             </div>
 
@@ -306,16 +352,32 @@ export default function MockInterviewPage() {
               <div className="space-y-2">
                 <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">Strengths</span>
                 <ul className="space-y-1.5 text-xs text-slate-300 list-disc list-inside font-semibold leading-relaxed">
-                  <li>Strong hashing complement complexity design.</li>
-                  <li>Good runtime space-time trade-off answers.</li>
-                  <li>Accurate pointer boundary specifications.</li>
+                  {reportData && reportData.strengths ? (
+                    reportData.strengths.map((str: string, index: number) => (
+                      <li key={index}>{str}</li>
+                    ))
+                  ) : (
+                    <>
+                      <li>Strong hashing complement complexity design.</li>
+                      <li>Good runtime space-time trade-off answers.</li>
+                      <li>Accurate pointer boundary specifications.</li>
+                    </>
+                  )}
                 </ul>
               </div>
               <div className="space-y-2">
                 <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">Areas for Improvement</span>
                 <ul className="space-y-1.5 text-xs text-slate-350 list-disc list-inside font-semibold leading-relaxed">
-                  <li>Vocal pacing was slightly fast on sorting limits.</li>
-                  <li>Verify recursive depths values to avoid call stack exceptions.</li>
+                  {reportData && reportData.weaknesses ? (
+                    reportData.weaknesses.map((weak: string, index: number) => (
+                      <li key={index}>{weak}</li>
+                    ))
+                  ) : (
+                    <>
+                      <li>Vocal pacing was slightly fast on sorting limits.</li>
+                      <li>Verify recursive depths values to avoid call stack exceptions.</li>
+                    </>
+                  )}
                 </ul>
               </div>
             </div>

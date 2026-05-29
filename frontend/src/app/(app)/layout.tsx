@@ -12,14 +12,19 @@ import { useRouter } from 'next/navigation';
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const { sidebarOpen } = useUIStore();
-  const { isLoggedIn } = useUserStore();
+  const { isLoggedIn, fetchProblemsList, fetchAnalytics } = useUserStore();
+  const hasLoaded = React.useRef(false);
 
-  // Route protection
+  // Route protection and backend data fetching
   React.useEffect(() => {
     if (!isLoggedIn) {
       router.push('/login');
+    } else if (!hasLoaded.current) {
+      hasLoaded.current = true;
+      fetchProblemsList();
+      fetchAnalytics();
     }
-  }, [isLoggedIn, router]);
+  }, [isLoggedIn, router, fetchProblemsList, fetchAnalytics]);
 
   if (!isLoggedIn) {
     return (
