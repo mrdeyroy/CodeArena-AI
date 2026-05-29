@@ -26,6 +26,7 @@ function PracticeExplorer() {
   const searchParams = useSearchParams();
   const searchParamQuery = searchParams ? searchParams.get('search') : null;
   const { problems, fetchProblemsList } = useUserStore();
+  const [hasMounted, setHasMounted] = React.useState(false);
 
   // Filter States
   const [searchQuery, setSearchQuery] = React.useState(searchParamQuery || '');
@@ -35,6 +36,7 @@ function PracticeExplorer() {
   const [selectedStatus, setSelectedStatus] = React.useState<string | 'All'>('All');
 
   React.useEffect(() => {
+    setHasMounted(true);
     fetchProblemsList();
   }, [fetchProblemsList]);
 
@@ -44,6 +46,15 @@ function PracticeExplorer() {
       setSearchQuery(searchParamQuery);
     }
   }, [searchParamQuery]);
+
+  if (!hasMounted) {
+    return (
+      <div className="flex flex-col items-center justify-center py-24 gap-3 text-slate-500 max-w-7xl mx-auto">
+        <div className="animate-spin rounded-full h-6 w-6 border-t-2 border-b-2 border-indigo-500" />
+        <span className="text-[10px] font-bold uppercase tracking-wider text-indigo-450">Loading Practice Explorer...</span>
+      </div>
+    );
+  }
 
   // Derived unique filters
   const allTopics = Array.from(new Set(problems.flatMap(p => p.topics)));
