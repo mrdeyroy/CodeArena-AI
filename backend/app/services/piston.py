@@ -218,11 +218,102 @@ class PistonService:
                     memory=0,
                 )
 
+            elif "c" == lang:
+                # Compile step
+                c_file = temp_dir / "solution.c"
+                c_file.write_text(request.code, encoding="utf-8")
+                exec_file = temp_dir / "solution_bin"
+                
+                # Check for gcc
+                gcc_path = shutil.which("gcc")
+                if not gcc_path:
+                    return ExecuteResponse(
+                        status=SubmissionStatus.COMPILE_ERROR,
+                        stdout=None,
+                        stderr="gcc compiler is not available on the server.",
+                        runtime=0,
+                        memory=0,
+                    )
+
+                compile_proc = await asyncio.create_subprocess_exec(
+                    "gcc", "-O3", str(c_file), "-o", str(exec_file),
+                    stdout=asyncio.subprocess.PIPE,
+                    stderr=asyncio.subprocess.PIPE,
+                )
+                comp_stdout, comp_stderr = await compile_proc.communicate()
+                
+                if compile_proc.returncode != 0:
+                    return ExecuteResponse(
+                        status=SubmissionStatus.COMPILE_ERROR,
+                        stdout=None,
+                        stderr=comp_stderr.decode("utf-8", errors="replace"),
+                        runtime=0,
+                        memory=0,
+                    )
+                
+                # Execute step
+                start_time = time.perf_counter()
+                proc = await asyncio.create_subprocess_exec(
+                    str(exec_file),
+                    stdin=asyncio.subprocess.PIPE,
+                    stdout=asyncio.subprocess.PIPE,
+                    stderr=asyncio.subprocess.PIPE,
+                )
+                
+                try:
+                    stdout, stderr = await asyncio.wait_for(
+                        proc.communicate(input=(request.stdin or "").encode("utf-8")),
+                        timeout=5.0
+                    )
+                    runtime = time.perf_counter() - start_time
+                    exit_code = proc.returncode
+                except asyncio.TimeoutError:
+                    try:
+                        proc.kill()
+                    except Exception:
+                        pass
+                    return ExecuteResponse(
+                        status=SubmissionStatus.TIME_LIMIT_EXCEEDED,
+                        stdout=None,
+                        stderr="Execution timed out (5.0s limit reached).",
+                        runtime=5.0,
+                        memory=0,
+                    )
+
+                decoded_stdout = stdout.decode("utf-8", errors="replace")
+                decoded_stderr = stderr.decode("utf-8", errors="replace")
+
+                if exit_code != 0:
+                    return ExecuteResponse(
+                        status=SubmissionStatus.RUNTIME_ERROR,
+                        stdout=decoded_stdout or None,
+                        stderr=decoded_stderr or f"Exit code {exit_code}",
+                        runtime=runtime,
+                        memory=0,
+                    )
+
+                return ExecuteResponse(
+                    status=SubmissionStatus.ACCEPTED,
+                    stdout=decoded_stdout,
+                    stderr=decoded_stderr or None,
+                    runtime=runtime,
+                    memory=0,
+                )
+
+            elif "java" in lang:
+                return ExecuteResponse(
+                    status=SubmissionStatus.COMPILE_ERROR,
+                    stdout=None,
+                    stderr="Java compiler (javac) is not available on this server environment. Please select Python 3, C++ (g++), C (gcc), or JavaScript (Node).",
+                    runtime=0,
+                    memory=0,
+                )
+
             else:
                 return ExecuteResponse(
                     status=SubmissionStatus.COMPILE_ERROR,
                     stdout=None,
-                    stderr=f"Language '{request.language}' is not supported in the local sandbox environment. Supported languages are Python, C++, and JavaScript.",
+                    stderr=f"Language '{request.language}' is not supported in the local sandbox environment. Supported languages are Python, C++, C, and JavaScript.",
                     runtime=0,
                     memory=0,
                 )

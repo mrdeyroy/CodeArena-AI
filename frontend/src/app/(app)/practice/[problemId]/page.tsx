@@ -485,6 +485,8 @@ export default function CodingWorkspacePage() {
                 <option value="python">Python 3</option>
                 <option value="javascript">JavaScript (Node)</option>
                 <option value="cpp">C++ (g++)</option>
+                <option value="c">C (gcc)</option>
+                <option value="java">Java (OpenJDK)</option>
               </select>
               
               <button 

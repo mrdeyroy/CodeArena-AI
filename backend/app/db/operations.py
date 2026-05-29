@@ -54,7 +54,7 @@ def fetch_problems(filters: dict | None = None) -> list[dict]:
 
 def fetch_problem_by_slug(slug: str) -> dict | None:
     supabase = get_supabase()
-    resp = supabase.from_("problems").select("*").eq("slug", slug).maybe_single().execute()
+    resp = supabase.from_("problems").select("*").eq("slug", slug.lower()).maybe_single().execute()
     return resp.data if resp else None
 
 

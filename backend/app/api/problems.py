@@ -150,7 +150,7 @@ async def get_problem(slug: str):
             except Exception as e:
                 print("Failed to save generated starter code to DB:", e)
 
-    meta = leetcode_cache_metadata.get(slug) or mock_problems_metadata.get(slug) or {}
+    meta = leetcode_cache_metadata.get(slug.lower()) or mock_problems_metadata.get(slug.lower()) or {}
     meta_constraints = meta.get("constraints") or ""
     if isinstance(meta_constraints, list):
         meta_constraints = "\n".join(meta_constraints)

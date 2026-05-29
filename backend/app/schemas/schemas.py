@@ -29,6 +29,8 @@ class Language(str, Enum):
     PYTHON = "python"
     CPP = "cpp"
     JAVA = "java"
+    C = "c"
+    JAVASCRIPT = "javascript"
 
 
 class InterviewType(str, Enum):
