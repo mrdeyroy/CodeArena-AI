@@ -4,6 +4,7 @@ import * as React from 'react';
 import { X, Send, Sparkles, User, BrainCircuit } from 'lucide-react';
 import { useUIStore } from '@/store/ui-store';
 import { AnimatePresence, motion } from 'framer-motion';
+import { sendCoachChat } from '@/lib/api';
 
 export const AIPanel = () => {
   const { aiPanelOpen, toggleAIPanel } = useUIStore();
@@ -11,30 +12,31 @@ export const AIPanel = () => {
     { role: 'assistant', text: "Hello! I am your CodeArena AI Coach. Ask me anything about algorithm optimization, practice path setup, or upcoming tech loops." }
   ]);
   const [inputValue, setInputValue] = React.useState('');
+  const [isTyping, setIsTyping] = React.useState(false);
   const chatEndRef = React.useRef<HTMLDivElement>(null);
 
   React.useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  const handleSend = (text: string) => {
-    if (!text.trim()) return;
+  const handleSend = async (text: string) => {
+    if (!text.trim() || isTyping) return;
     setMessages(prev => [...prev, { role: 'user', text }]);
     setInputValue('');
+    setIsTyping(true);
 
-    // Mock AI reply
-    setTimeout(() => {
-      let reply = "I can definitely help with that. Let's analyze your current metrics or practice roadmap.";
-      if (text.toLowerCase().includes('dp') || text.toLowerCase().includes('dynamic')) {
-        reply = "Dynamic programming is all about state space optimization. You currently have a 28% mastery rate in DP. I recommend practicing 'Longest Palindromic Substring' and 'Edit Distance' first. Let me know if you want me to explain either of those.";
-      } else if (text.toLowerCase().includes('graph') || text.toLowerCase().includes('bfs')) {
-        reply = "Graph traversals (BFS/DFS) are one of your key growth areas (35% mastery). Try focusing on cyclic graph states and keeping track of parent pointers. Check out the 'Merge k Sorted Lists' problem which leverages similar priority elements.";
-      } else if (text.toLowerCase().includes('interview') || text.toLowerCase().includes('prep')) {
-        reply = "Your overall Interview Readiness is at 88%. You are solid in Array and Two Pointers, but need 3 more practice sessions in graphs to unlock Tier-1 company matches. Would you like to schedule a mock loop?";
-      }
-
+    try {
+      const reply = await sendCoachChat(text);
       setMessages(prev => [...prev, { role: 'assistant', text: reply }]);
-    }, 800);
+    } catch (e) {
+      console.error(e);
+      setMessages(prev => [...prev, { 
+        role: 'assistant', 
+        text: "I apologize, but I am having trouble connecting to the backend. Please verify that the FastAPI server is running." 
+      }]);
+    } finally {
+      setIsTyping(false);
+    }
   };
 
   return (
@@ -76,6 +78,7 @@ export const AIPanel = () => {
                   key={prompt}
                   onClick={() => handleSend(prompt)}
                   className="px-2.5 py-1 text-[11px] font-medium bg-slate-900 border border-slate-800 hover:border-slate-700 text-slate-300 rounded cursor-pointer transition-colors"
+                  disabled={isTyping}
                 >
                   {prompt}
                 </button>
@@ -90,11 +93,11 @@ export const AIPanel = () => {
               return (
                 <div key={index} className={`flex gap-2.5 ${isAI ? 'justify-start' : 'justify-end'}`}>
                   {isAI && (
-                    <div className="w-6 h-6 rounded bg-indigo-600 flex items-center justify-center shrink-0 text-white">
+                    <div className="w-6 h-6 rounded bg-indigo-650 flex items-center justify-center shrink-0 text-white shadow-sm">
                       <Sparkles className="w-3.5 h-3.5" />
                     </div>
                   )}
-                  <div className={`max-w-[80%] rounded-xl px-3.5 py-2.5 text-xs leading-relaxed
+                  <div className={`max-w-[80%] rounded-xl px-3.5 py-2.5 text-xs leading-relaxed font-semibold whitespace-pre-wrap shadow-xs
                     ${isAI 
                       ? 'bg-slate-800/90 text-slate-200 border border-slate-700/40' 
                       : 'bg-indigo-600 text-white'}`}
@@ -102,13 +105,24 @@ export const AIPanel = () => {
                     {msg.text}
                   </div>
                   {!isAI && (
-                    <div className="w-6 h-6 rounded bg-slate-800 flex items-center justify-center shrink-0 border border-slate-700 text-slate-300">
+                    <div className="w-6 h-6 rounded bg-slate-800 flex items-center justify-center shrink-0 border border-slate-700 text-slate-350 font-bold">
                       <User className="w-3.5 h-3.5" />
                     </div>
                   )}
                 </div>
               );
             })}
+            
+            {isTyping && (
+              <div className="flex gap-2.5 justify-start items-center">
+                <div className="w-6 h-6 rounded bg-indigo-650 flex items-center justify-center text-white shrink-0 text-[10px] animate-pulse">
+                  <Sparkles className="w-3.5 h-3.5" />
+                </div>
+                <div className="bg-slate-800/90 border border-slate-700/40 rounded-lg px-3 py-1.5 text-[10px] text-slate-500 font-bold uppercase tracking-wider animate-pulse">
+                  Coach is typing...
+                </div>
+              </div>
+            )}
             <div ref={chatEndRef} />
           </div>
 
@@ -123,14 +137,16 @@ export const AIPanel = () => {
             >
               <input
                 type="text"
-                placeholder="Ask your AI Coach..."
-                className="flex-1 bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:border-indigo-500/80"
+                placeholder={isTyping ? "Waiting for coach..." : "Ask your AI Coach..."}
+                className="flex-1 bg-slate-900 border border-slate-800 rounded-lg px-3.5 py-2 text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:border-indigo-500/80"
                 value={inputValue}
                 onChange={(e) => setInputValue(e.target.value)}
+                disabled={isTyping}
               />
               <button
                 type="submit"
                 className="p-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-colors cursor-pointer"
+                disabled={isTyping}
               >
                 <Send className="w-3.5 h-3.5" />
               </button>

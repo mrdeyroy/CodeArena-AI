@@ -86,7 +86,7 @@ export default function CommunityPage() {
             {/* Header info */}
             <div className="flex justify-between items-start">
               <div className="flex items-center gap-3">
-                <img src={post.author.avatar} alt={post.author.name} className="w-8.5 h-8.5 rounded-lg object-cover" />
+                <img src={post.author.avatar || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=256&h=256&q=80"} alt={post.author.name} className="w-8.5 h-8.5 rounded-lg object-cover" />
                 <div>
                   <div className="flex items-center gap-2">
                     <span className="font-bold text-slate-200 text-xs">{post.author.name}</span>

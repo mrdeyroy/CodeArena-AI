@@ -53,12 +53,23 @@ export const useUserStore = create<UserState>((set, get) => ({
   fetchAnalytics: async () => {
     try {
       const overview = await fetchAnalyticsOverview();
+      const solved = overview.total_problems_solved || 0;
+      
+      // Calculate dynamic progression values
+      const ratingVal = 1200 + solved * 15;
+      const rankVal = Math.max(1, 15280 - solved * 120);
+      const certsVal = Math.floor(solved / 3);
+      const activeDays = overview.active_days || 0;
+
       set((state) => ({
         user: {
           ...state.user,
-          problemsSolved: overview.total_problems_solved,
+          problemsSolved: solved,
           interviewReadiness: Math.round(overview.overall_readiness),
-          streak: overview.current_streak || state.user.streak,
+          streak: activeDays,
+          rating: ratingVal,
+          globalRank: rankVal,
+          certificatesEarned: certsVal,
         }
       }));
     } catch (e) {

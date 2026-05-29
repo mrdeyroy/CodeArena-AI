@@ -36,7 +36,7 @@ export default function AnalyticsPage() {
             <Badge variant="primary">Updated live</Badge>
           </div>
           <div className="h-64">
-            <ResponsiveContainer width="100%" height="100%">
+            <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
               <AreaChart data={mockAnalyticsData.ratingTrend}>
                 <defs>
                   <linearGradient id="colorRatingAna" x1="0" y1="0" x2="0" y2="1">
@@ -61,7 +61,7 @@ export default function AnalyticsPage() {
             <Badge variant="success">88% Peak</Badge>
           </div>
           <div className="h-64">
-            <ResponsiveContainer width="100%" height="100%">
+            <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
               <LineChart data={mockAnalyticsData.accuracyTrend}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
                 <XAxis dataKey="date" stroke="#64748b" fontSize={10} tickLine={false} />
@@ -85,7 +85,7 @@ export default function AnalyticsPage() {
             <span className="text-[10px] text-slate-500 font-bold uppercase">Radar distribution</span>
           </div>
           <div className="h-64">
-            <ResponsiveContainer width="100%" height="100%">
+            <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
               <RadarChart cx="50%" cy="50%" outerRadius="70%" data={mockAnalyticsData.topicMastery}>
                 <PolarGrid stroke="#334155" />
                 <PolarAngleAxis dataKey="topic" stroke="#94a3b8" fontSize={9} />
@@ -104,7 +104,7 @@ export default function AnalyticsPage() {
             <span className="text-[10px] text-slate-500 font-bold">Weekly practice scale</span>
           </div>
           <div className="h-64">
-            <ResponsiveContainer width="100%" height="100%">
+            <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
               <BarChart data={mockAnalyticsData.learningConsistency}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
                 <XAxis dataKey="week" stroke="#64748b" fontSize={10} tickLine={false} />

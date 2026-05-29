@@ -41,23 +41,112 @@ import {
   PolarRadiusAxis,
   Radar
 } from 'recharts';
+import { fetchSkillAnalytics, fetchAnalyticsProgress, fetchRecentSubmissions } from '@/lib/api';
 
 export default function DashboardPage() {
   const { user, problems } = useUserStore();
+  const [skillStates, setSkillStates] = React.useState<any[]>([]);
+  const [progressData, setProgressData] = React.useState<any[]>([]);
+  const [recentSubmissions, setRecentSubmissions] = React.useState<any[]>([]);
 
-  // Find dynamic recommendation based on weaknesses
-  const topWeakness = mockWeaknesses[0];
+  React.useEffect(() => {
+    fetchSkillAnalytics()
+      .then(data => setSkillStates(data))
+      .catch(err => console.error("Error fetching skill analytics:", err));
+
+    fetchAnalyticsProgress()
+      .then(data => {
+        if (data && data.progress) {
+          setProgressData(data.progress);
+        }
+      })
+      .catch(err => console.error("Error fetching analytics progress:", err));
+
+    fetchRecentSubmissions(6)
+      .then(data => setRecentSubmissions(data))
+      .catch(err => console.error("Error fetching recent submissions:", err));
+  }, []);
+
+  const SKILL_ORDER = [
+    'Arrays & Hashing',
+    'Two Pointers',
+    'Sliding Window',
+    'Binary Trees',
+    'Graphs',
+    'Dynamic Programming',
+    'Greedy Algorithms'
+  ];
 
   // Topics for the mini-roadmap
-  const roadmapSteps = [
-    { name: 'Arrays & Hashing', status: 'mastered', score: 92 },
-    { name: 'Two Pointers', status: 'mastered', score: 85 },
-    { name: 'Sliding Window', status: 'learning', score: 65 },
-    { name: 'Binary Trees', status: 'learning', score: 50 },
-    { name: 'Graphs', status: 'weak', score: 35 },
-    { name: 'Dynamic Programming', status: 'weak', score: 28 },
-    { name: 'Greedy Algorithms', status: 'locked', score: 0 }
-  ];
+  const roadmapSteps = SKILL_ORDER.map(name => {
+    const s = skillStates.find(state => state.skill_name === name);
+    const score = s ? Math.round(s.mastery * 100) : 0;
+    
+    let status: 'mastered' | 'learning' | 'weak' | 'locked' = 'locked';
+    if (score >= 80) status = 'mastered';
+    else if (score >= 50) status = 'learning';
+    else if (score > 0) status = 'weak';
+    
+    return { name, status, score };
+  });
+
+  // Find dynamic weaknesses based on real user mastery
+  const dynamicWeaknesses = skillStates
+    .filter(s => {
+      const score = Math.round(s.mastery * 100);
+      return score < 50 && score > 0;
+    })
+    .map(s => {
+      const score = Math.round(s.mastery * 100);
+      let aiSuggestion = `Struggling to achieve efficiency on ${s.skill_name}. Focus on basic practice problems to build confidence.`;
+      if (s.skill_name.includes('Graph')) {
+        aiSuggestion = 'You frequently trigger memory bounds and recursion depth errors. Practice converting your graph DFS traversal solutions into explicit-stack iterations.';
+      } else if (s.skill_name.includes('Programming')) {
+        aiSuggestion = 'Struggling to set up subproblem boundary conditions. Focus on writing out the recursive induction steps on paper, then translate them to bottom-up tabular loops.';
+      }
+      return {
+        topic: s.skill_name,
+        mastery: score,
+        aiSuggestion
+      };
+    });
+
+  const weaknessesToDisplay = dynamicWeaknesses.length > 0 ? dynamicWeaknesses.slice(0, 2) : mockWeaknesses;
+  const topWeakness = weaknessesToDisplay[0];
+
+  // Radar/Spider chart data
+  const dynamicTopicMastery = SKILL_ORDER.map(name => {
+    const s = skillStates.find(state => state.skill_name === name);
+    const score = s ? Math.round(s.mastery * 100) : 0;
+    const shortName = name === 'Arrays & Hashing' ? 'Arrays' :
+                      name === 'Dynamic Programming' ? 'DP' :
+                      name === 'Greedy Algorithms' ? 'Greedy' :
+                      name === 'Binary Trees' ? 'Trees' :
+                      name.split(' ')[0];
+    return { topic: shortName, mastery: score };
+  });
+  const topicMasteryData = skillStates.length > 0 ? dynamicTopicMastery : mockAnalyticsData.topicMastery;
+
+  // Rating area chart data
+  const dynamicRatingTrend = progressData.map(p => {
+    const d = new Date(p.date);
+    const formattedDate = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    const computedRating = Math.round(1500 + p.readiness * 10);
+    return { date: formattedDate, rating: computedRating };
+  });
+  const ratingTrendData = dynamicRatingTrend.length > 0 ? dynamicRatingTrend : mockAnalyticsData.ratingTrend;
+
+  // Recent activities mapping
+  const dynamicActivities = recentSubmissions.map(sub => {
+    const isSolved = sub.status === 'accepted';
+    return {
+      id: sub.id,
+      title: `${sub.problems?.title || 'Problem'} ${isSolved ? 'Solved' : 'Attempted'}`,
+      description: `Completed in ${sub.language || 'code'} with ${isSolved ? 'optimal execution' : 'status: ' + sub.status}.`,
+      timestamp: sub.created_at
+    };
+  });
+  const activitiesToDisplay = dynamicActivities.length > 0 ? dynamicActivities : mockActivities;
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto">
@@ -98,11 +187,11 @@ export default function DashboardPage() {
       {/* 2. KPI CARDS */}
       <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
         {[
-          { label: 'Problems Solved', value: user.problemsSolved, sub: '412 / 600 total', icon: Target, color: 'text-indigo-400 bg-indigo-500/10' },
-          { label: 'Contest Rating', value: user.rating, sub: 'Global Top 1.2%', icon: Trophy, color: 'text-amber-400 bg-amber-500/10' },
+          { label: 'Problems Solved', value: user.problemsSolved, sub: `${user.problemsSolved} / ${problems.length || 100} total`, icon: Target, color: 'text-indigo-400 bg-indigo-500/10' },
+          { label: 'Contest Rating', value: user.rating, sub: user.problemsSolved > 0 ? 'Rank: Guardian' : 'Rank: Novice', icon: Trophy, color: 'text-amber-400 bg-amber-500/10' },
           { label: 'Current Streak', value: `${user.streak} Days`, sub: 'Active daily coder', icon: Flame, color: 'text-rose-400 bg-rose-500/10' },
-          { label: 'Certifications', value: user.certificatesEarned, sub: '2 active credentials', icon: Award, color: 'text-emerald-400 bg-emerald-500/10' },
-          { label: 'Global Rank', value: `#${user.globalRank}`, sub: 'Top 350 globally', icon: TrendingUp, color: 'text-cyan-400 bg-cyan-500/10' },
+          { label: 'Certifications', value: user.certificatesEarned, sub: `${user.certificatesEarned} active credentials`, icon: Award, color: 'text-emerald-400 bg-emerald-500/10' },
+          { label: 'Global Rank', value: `#${user.globalRank}`, sub: `Top ${(user.globalRank / 15280 * 100).toFixed(1)}% globally`, icon: TrendingUp, color: 'text-cyan-400 bg-cyan-550/10' },
         ].map((kpi, index) => {
           const Icon = kpi.icon;
           return (
@@ -173,12 +262,16 @@ export default function DashboardPage() {
           </div>
 
           <div className="bg-slate-950/60 rounded-xl p-3 border border-slate-800 flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-indigo-500/10 flex items-center justify-center shrink-0 text-indigo-400">
+            <div className="w-8 h-8 rounded-lg bg-indigo-500/10 flex items-center justify-center shrink-0 text-indigo-450">
               <Target className="w-4 h-4" />
             </div>
             <div>
               <p className="text-[10px] font-bold text-slate-500 uppercase">Current Focus</p>
-              <p className="text-xs font-semibold text-slate-200">Solve Sliding Window complexity matrices to unlock Graphs module.</p>
+              <p className="text-xs font-semibold text-slate-200">
+                {topWeakness 
+                  ? `Strengthen your fundamentals in ${topWeakness.topic} to unlock advanced algorithms.`
+                  : "Solve Sliding Window complexity matrices to unlock Graphs module."}
+              </p>
             </div>
           </div>
         </Card>
@@ -194,10 +287,10 @@ export default function DashboardPage() {
           </div>
 
           <div className="space-y-4 my-4">
-            {mockWeaknesses.map((weak, index) => (
+            {weaknessesToDisplay.map((weak, index) => (
               <div key={index} className="space-y-2">
                 <div className="flex justify-between items-center text-xs">
-                  <span className="font-bold text-slate-350">{weak.topic}</span>
+                  <span className="font-bold text-slate-355">{weak.topic}</span>
                   <Badge variant="warning">Mastery: {weak.mastery}%</Badge>
                 </div>
                 <Progress value={weak.mastery} color="warning" />
@@ -233,8 +326,8 @@ export default function DashboardPage() {
             {/* Rating Area Chart */}
             <div className="h-60">
               <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2">Rating Growth Trend</p>
-              <ResponsiveContainer width="100%" height="90%">
-                <AreaChart data={mockAnalyticsData.ratingTrend}>
+              <ResponsiveContainer width="100%" height="90%" minWidth={0} minHeight={0}>
+                <AreaChart data={ratingTrendData}>
                   <defs>
                     <linearGradient id="colorRating" x1="0" y1="0" x2="0" y2="1">
                       <stop offset="5%" stopColor="#6366f1" stopOpacity={0.3}/>
@@ -252,8 +345,8 @@ export default function DashboardPage() {
             {/* Radar/Spider chart for topic mastery */}
             <div className="h-60">
               <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2">Topic Mastery Radar</p>
-              <ResponsiveContainer width="100%" height="90%">
-                <RadarChart cx="50%" cy="50%" outerRadius="70%" data={mockAnalyticsData.topicMastery}>
+              <ResponsiveContainer width="100%" height="90%" minWidth={0} minHeight={0}>
+                <RadarChart cx="50%" cy="50%" outerRadius="70%" data={topicMasteryData}>
                   <PolarGrid stroke="#334155" />
                   <PolarAngleAxis dataKey="topic" stroke="#94a3b8" fontSize={9} />
                   <PolarRadiusAxis angle={30} domain={[0, 100]} stroke="#475569" fontSize={8} />
@@ -273,7 +366,7 @@ export default function DashboardPage() {
           </div>
 
           <div className="space-y-4 flex-1 overflow-y-auto max-h-[220px] pr-1">
-            {mockActivities.map((act) => (
+            {activitiesToDisplay.map((act) => (
               <div key={act.id} className="flex gap-3">
                 <div className="relative flex flex-col items-center">
                   <div className="w-5 h-5 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center shrink-0">

@@ -23,7 +23,9 @@ import {
   ChevronUp,
   AlertCircle,
   CheckCircle2,
-  Gauge
+  X,
+  History,
+  Code
 } from 'lucide-react';
 import { useUserStore } from '@/store/user-store';
 import { useUIStore } from '@/store/ui-store';
@@ -32,8 +34,15 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Tabs } from '@/components/ui/tabs';
 import { Progress } from '@/components/ui/progress';
-import { fetchProblemBySlug, runProblem, submitProblem, sendCoachChat } from '@/lib/api';
+import { 
+  fetchProblemBySlug, 
+  runProblem, 
+  submitProblem, 
+  sendCoachChat,
+  fetchRecentSubmissions
+} from '@/lib/api';
 import { Problem } from '@/lib/types';
+import { motion, AnimatePresence } from 'framer-motion';
 
 export default function CodingWorkspacePage() {
   const params = useParams();
@@ -66,12 +75,30 @@ export default function CodingWorkspacePage() {
   // Confidence Slider
   const [confidence, setConfidence] = React.useState(50);
 
-  // AI Mentor Chat in Workspace
+  // Workspace-integrated AI Assistant Panel toggle state
+  const [workspaceAiOpen, setWorkspaceAiOpen] = React.useState(false);
   const [aiMentorMessages, setAiMentorMessages] = React.useState<Array<{ role: 'user' | 'assistant'; text: string }>>([]);
   const [aiInputValue, setAiInputValue] = React.useState('');
   const [aiIsTyping, setAiIsTyping] = React.useState(false);
 
-  // Fetch problem details from backend
+  // Submissions State
+  const [submissionsList, setSubmissionsList] = React.useState<any[]>([]);
+  const [loadingSubmissions, setLoadingSubmissions] = React.useState(false);
+
+  // Fetch problem details and submissions
+  const loadSubmissions = async (probId: string) => {
+    setLoadingSubmissions(true);
+    try {
+      const data = await fetchRecentSubmissions(50);
+      const filtered = data.filter((s: any) => s.problems?.id === probId || s.problem_id === probId);
+      setSubmissionsList(filtered);
+    } catch (e) {
+      console.error('Failed to load past submissions:', e);
+    } finally {
+      setLoadingSubmissions(false);
+    }
+  };
+
   React.useEffect(() => {
     async function load() {
       try {
@@ -81,8 +108,10 @@ export default function CodingWorkspacePage() {
         setEditorCode(p.starterCode[selectedLanguage] || p.starterCode['python'] || '');
         // Initial assistant message
         setAiMentorMessages([
-          { role: 'assistant', text: `Hi, I am your dedicated Coding Mentor. I have full context on "${p.title}". Let me know if you need help optimization steps, dry runs, or line-by-line debugging.` }
+          { role: 'assistant', text: `Hi, I am your dedicated Coding Mentor. I have full context on "${p.title}". Let me know if you need help with optimization steps, dry runs, or line-by-line debugging.` }
         ]);
+        // Load submissions
+        loadSubmissions(p.id);
       } catch (e) {
         console.error('Failed to load problem:', e);
       } finally {
@@ -184,8 +213,12 @@ export default function CodingWorkspacePage() {
         submittedAt: new Date().toISOString(),
       });
 
+      // Reload historical submissions
+      loadSubmissions(problem.id);
+
       // Trigger AI Coach analysis
       setAiIsTyping(true);
+      setWorkspaceAiOpen(true);
       try {
         const feedback = await sendCoachChat(
           `Student submitted code for problem "${problem.title}". Status: ${mappedStatus}. Code:\n${editorCode}`
@@ -217,6 +250,7 @@ export default function CodingWorkspacePage() {
   // AI assistant interactions via backend
   const handleAICommand = async (action: string) => {
     if (!problem) return;
+    setWorkspaceAiOpen(true);
     setAiIsTyping(true);
     
     let prompt = '';
@@ -259,10 +293,17 @@ export default function CodingWorkspacePage() {
     }
   };
 
+  const loadPastSubmissionCode = (code: string) => {
+    if (!code) return;
+    setEditorCode(code);
+    setLeftActiveTab('description');
+  };
+
   const leftTabs = [
     { id: 'description', label: 'Description', icon: HelpCircle },
     { id: 'hints', label: 'Hints', icon: Lightbulb },
     { id: 'editorial', label: 'Editorial', icon: BookOpen },
+    { id: 'submissions', label: 'Submissions', icon: History },
   ];
 
   if (loading || !problem) {
@@ -275,12 +316,12 @@ export default function CodingWorkspacePage() {
   }
 
   return (
-    <div className="h-[calc(100vh-5.5rem)] flex flex-col md:flex-row gap-4 max-w-[1600px] mx-auto overflow-hidden">
+    <div className="h-[calc(100vh-5.5rem)] flex flex-row gap-4 max-w-[1600px] mx-auto overflow-hidden relative">
       
       {/* COLUMN 1: Description Panel */}
-      <div className="flex-1 bg-slate-900/60 border border-slate-800 rounded-xl flex flex-col h-full overflow-hidden min-w-[320px]">
+      <div className="flex-1 bg-slate-900/60 border border-slate-800/80 rounded-xl flex flex-col h-full overflow-hidden min-w-[320px]">
         {/* Left header tabs */}
-        <div className="px-4 pt-3 border-b border-slate-800 bg-slate-950/40">
+        <div className="px-4 pt-3 border-b border-slate-800/60 bg-slate-950/40 shrink-0">
           <Tabs
             tabs={leftTabs}
             activeTab={leftActiveTab}
@@ -299,8 +340,8 @@ export default function CodingWorkspacePage() {
                 </Badge>
               </div>
 
-              {/* MD Render */}
-              <div className="text-xs leading-relaxed text-slate-300 whitespace-pre-wrap font-medium">
+              {/* Description Markdown text */}
+              <div className="text-xs leading-relaxed text-slate-350 whitespace-pre-wrap font-medium">
                 {problem.description}
               </div>
 
@@ -319,14 +360,14 @@ export default function CodingWorkspacePage() {
               </div>
 
               {/* Constraints */}
-              <div className="space-y-2 pt-2">
-                <p className="text-xs font-bold text-slate-400">Constraints</p>
-                <ul className="list-disc list-inside text-xs text-slate-400 space-y-1 font-mono">
-                  {problem.constraints.map((c, idx) => (
-                    <li key={idx}>{c}</li>
-                  ))}
-                </ul>
-              </div>
+              {problem.constraints && (
+                <div className="space-y-2 pt-2">
+                  <p className="text-xs font-bold text-slate-400">Constraints</p>
+                  <pre className="bg-slate-950/40 p-3 rounded-lg border border-slate-850 text-xs text-slate-400 font-mono leading-relaxed">
+                    {problem.constraints}
+                  </pre>
+                </div>
+              )}
             </div>
           )}
 
@@ -340,6 +381,11 @@ export default function CodingWorkspacePage() {
                     {hint}
                   </div>
                 ))}
+                {problem.hints.length === 0 && (
+                  <div className="text-slate-500 text-center py-6 text-xs font-semibold">
+                    No hints available. Use AI Assistant to get adaptive hints.
+                  </div>
+                )}
               </div>
             </div>
           )}
@@ -347,9 +393,78 @@ export default function CodingWorkspacePage() {
           {leftActiveTab === 'editorial' && (
             <div className="space-y-4">
               <h2 className="text-xs font-bold text-slate-200">AI Editorial Solution</h2>
-              <p className="text-xs leading-relaxed text-slate-350 font-semibold">
-                {problem.editorial || "No editorial posted yet. Use the AI Coach panel on the right to auto-generate optimizations."}
+              <p className="text-xs leading-relaxed text-slate-350 font-semibold whitespace-pre-wrap">
+                {problem.editorial || "No editorial posted yet. Use the AI Coach panel to generate optimizations."}
               </p>
+            </div>
+          )}
+
+          {leftActiveTab === 'submissions' && (
+            <div className="space-y-4">
+              <div className="flex justify-between items-center">
+                <h2 className="text-xs font-bold text-slate-200">Your Submissions</h2>
+                <button 
+                  onClick={() => loadSubmissions(problem.id)}
+                  className="p-1 hover:bg-slate-800 rounded text-slate-400 hover:text-slate-200"
+                  title="Reload submissions history"
+                >
+                  <RotateCcw className="w-3.5 h-3.5" />
+                </button>
+              </div>
+
+              <div className="space-y-3">
+                {loadingSubmissions && (
+                  <div className="flex items-center justify-center py-6 gap-2 text-slate-500 text-xs">
+                    <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-indigo-500" />
+                    <span>Hydrating submissions...</span>
+                  </div>
+                )}
+
+                {!loadingSubmissions && submissionsList.map((sub, idx) => (
+                  <div 
+                    key={sub.id || idx} 
+                    className="bg-slate-950/60 p-3 rounded-lg border border-slate-850 hover:border-slate-800 transition-all flex flex-col gap-2 shadow-sm font-semibold"
+                  >
+                    <div className="flex justify-between items-center">
+                      <span className="flex items-center gap-1.5 text-xs">
+                        {sub.status === 'accepted' ? (
+                          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+                        ) : (
+                          <AlertCircle className="w-3.5 h-3.5 text-rose-400" />
+                        )}
+                        <span className={sub.status === 'accepted' ? 'text-emerald-400 font-bold' : 'text-rose-450 font-bold'}>
+                          {sub.status === 'accepted' ? 'Accepted' : 'Failed'}
+                        </span>
+                      </span>
+                      <span className="text-[10px] text-slate-500">
+                        {sub.created_at ? new Date(sub.created_at).toLocaleDateString() : 'recent'}
+                      </span>
+                    </div>
+
+                    <div className="flex items-center justify-between text-[11px] text-slate-400">
+                      <div className="flex items-center gap-2">
+                        <Badge variant="outline" className="text-[9px] uppercase font-bold py-0">{sub.language}</Badge>
+                        <span>Runtime: {sub.runtime ? `${Math.round(sub.runtime * 1000)}ms` : 'N/A'}</span>
+                      </div>
+                      
+                      {sub.code && (
+                        <button
+                          onClick={() => loadPastSubmissionCode(sub.code)}
+                          className="flex items-center gap-1 text-[10px] text-indigo-400 hover:text-indigo-300 font-bold cursor-pointer transition-colors"
+                        >
+                          <Code className="w-3 h-3" /> Load Code
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                ))}
+
+                {!loadingSubmissions && submissionsList.length === 0 && (
+                  <div className="text-slate-500 text-center py-8 text-xs">
+                    No submissions recorded yet for this problem.
+                  </div>
+                )}
+              </div>
             </div>
           )}
         </div>
@@ -358,41 +473,51 @@ export default function CodingWorkspacePage() {
       {/* COLUMN 2: Editor + Terminal Console Panel */}
       <div className="flex-[1.5] flex flex-col gap-4 h-full min-w-[420px]">
         {/* Editor Wrapper */}
-        <Card className="flex-1 p-0 bg-slate-900 border-slate-800 overflow-hidden flex flex-col">
+        <Card className="flex-1 p-0 bg-slate-900 border-slate-800/80 overflow-hidden flex flex-col">
           {/* Header config bar */}
-          <div className="flex items-center justify-between px-4 py-2 border-b border-slate-800 bg-slate-950/40">
+          <div className="flex items-center justify-between px-4 py-2 border-b border-slate-800/60 bg-slate-950/40">
             <div className="flex items-center gap-2">
               <select
-                className="bg-slate-950 border border-slate-800 rounded-lg px-2.5 py-1.5 text-xs text-slate-350 font-semibold focus:outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 hover:border-slate-700 transition-all duration-150 cursor-pointer shadow-sm"
+                className="bg-slate-950 border border-slate-800 rounded-lg px-2.5 py-1.5 text-xs text-slate-350 font-semibold focus:outline-none focus:border-indigo-500 hover:border-slate-700 transition-all duration-150 cursor-pointer shadow-sm"
                 value={selectedLanguage}
                 onChange={(e) => setSelectedLanguage(e.target.value)}
               >
                 <option value="python">Python 3</option>
-                <option value="javascript">JavaScript</option>
-                <option value="cpp">C++ 17</option>
-                <option value="java">Java 11</option>
-                <option value="go">Go Lang</option>
+                <option value="javascript">JavaScript (Node)</option>
+                <option value="cpp">C++ (g++)</option>
               </select>
               
               <button 
                 onClick={() => setEditorCode(problem.starterCode[selectedLanguage] || '')}
-                className="p-1.5 hover:bg-slate-800 hover:text-slate-200 rounded-lg text-slate-400 transition-colors cursor-pointer"
+                className="p-1.5 hover:bg-slate-850 hover:text-slate-200 rounded-lg text-slate-400 transition-colors cursor-pointer"
                 title="Reset code template"
               >
                 <RotateCcw className="w-3.5 h-3.5" />
               </button>
             </div>
 
-            {/* Timer */}
-            <div className="flex items-center gap-2 text-slate-400 font-mono text-xs font-semibold">
-              <Clock className="w-3.5 h-3.5 text-slate-500" />
-              <span>{formatTime(secondsElapsed)}</span>
-              <button 
-                onClick={() => setTimerActive(!timerActive)}
-                className={`text-[9px] font-bold px-1.5 py-0.5 rounded ${timerActive ? 'bg-indigo-500/10 text-indigo-400' : 'bg-slate-800 text-slate-500'}`}
+            {/* AI toggle and Timer */}
+            <div className="flex items-center gap-4">
+              <button
+                onClick={() => setWorkspaceAiOpen(!workspaceAiOpen)}
+                className={`flex items-center gap-1 text-[10px] font-bold px-2.5 py-1.5 rounded-lg border transition-all cursor-pointer shadow-sm
+                  ${workspaceAiOpen 
+                    ? 'bg-indigo-600 border-indigo-600 text-white shadow' 
+                    : 'bg-slate-950 border-slate-800 text-indigo-400 hover:border-slate-700 hover:text-indigo-300'}`}
               >
-                {timerActive ? 'PAUSE' : 'START'}
+                <Sparkles className="w-3.5 h-3.5 animate-pulse" /> AI ASSISTANT
               </button>
+
+              <div className="flex items-center gap-2 text-slate-400 font-mono text-xs font-semibold">
+                <Clock className="w-3.5 h-3.5 text-slate-505" />
+                <span>{formatTime(secondsElapsed)}</span>
+                <button 
+                  onClick={() => setTimerActive(!timerActive)}
+                  className={`text-[9px] font-bold px-1.5 py-0.5 rounded ${timerActive ? 'bg-indigo-500/10 text-indigo-400' : 'bg-slate-800 text-slate-500'}`}
+                >
+                  {timerActive ? 'PAUSE' : 'START'}
+                </button>
+              </div>
             </div>
           </div>
 
@@ -405,17 +530,19 @@ export default function CodingWorkspacePage() {
               value={editorCode}
               onChange={(val) => setEditorCode(val || '')}
               options={{
-                fontSize: 12,
+                fontSize: 12.5,
                 minimap: { enabled: false },
                 lineNumbers: 'on',
                 automaticLayout: true,
-                padding: { top: 12, bottom: 12 }
+                padding: { top: 12, bottom: 12 },
+                fontFamily: "'Fira Code', 'Cascadia Code', Consolas, monospace",
+                fontLigatures: true
               }}
             />
           </div>
 
           {/* Confidence Slider Footer bar */}
-          <div className="px-4 py-2 border-t border-slate-800 bg-slate-950/20 flex items-center justify-between text-[10px] text-slate-500 font-bold uppercase tracking-wider">
+          <div className="px-4 py-2 border-t border-slate-800 bg-slate-950/20 flex items-center justify-between text-[10px] text-slate-500 font-bold uppercase tracking-wider shrink-0">
             <span>Confidence index</span>
             <div className="flex items-center gap-2 flex-1 max-w-[200px] mx-4">
               <input
@@ -432,11 +559,11 @@ export default function CodingWorkspacePage() {
         </Card>
 
         {/* Bottom Console Panel */}
-        <Card className={`bg-slate-900 border-slate-800 transition-all duration-300 flex flex-col
+        <Card className={`bg-slate-900 border-slate-800/80 transition-all duration-300 flex flex-col shrink-0
           ${consoleOpen ? 'h-56' : 'h-10'}`}
         >
           {/* Header toggle bar */}
-          <div className="flex items-center justify-between px-4 py-1.5 border-b border-slate-800 bg-slate-950/40 shrink-0">
+          <div className="flex items-center justify-between px-4 py-1.5 border-b border-slate-800/60 bg-slate-950/40 shrink-0">
             <div className="flex gap-4">
               <button
                 onClick={() => { setConsoleOpen(true); setConsoleActiveTab('input'); }}
@@ -471,7 +598,7 @@ export default function CodingWorkspacePage() {
                 <div className="space-y-2">
                   <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Configure Input Values</p>
                   <textarea
-                    className="w-full bg-slate-950 border border-slate-800 rounded-lg p-3 text-slate-350 placeholder-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all duration-150 resize-none h-24 shadow-sm"
+                    className="w-full bg-slate-950 border border-slate-800/60 rounded-lg p-3 text-slate-350 placeholder-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all duration-150 resize-none h-24 shadow-sm"
                     value={customInput}
                     onChange={(e) => setCustomInput(e.target.value)}
                   />
@@ -496,13 +623,13 @@ export default function CodingWorkspacePage() {
                   )}
 
                   {testResults && !isRunning && !isSubmitting && (
-                    <div className="space-y-3 animate-fade-in">
+                    <div className="space-y-3 animate-fade-in font-semibold">
                       <div className="flex justify-between items-center">
                         <span className="flex items-center gap-1">
                           {testResults.status === 'Accepted' ? (
                             <CheckCircle2 className="w-4 h-4 text-emerald-400" />
                           ) : (
-                            <AlertCircle className="w-4 h-4 text-rose-400" />
+                            <AlertCircle className="w-4 h-4 text-rose-455" />
                           )}
                           <span className={`font-bold ${testResults.status === 'Accepted' ? 'text-emerald-400' : 'text-rose-450'}`}>
                             {testResults.status}
@@ -510,8 +637,9 @@ export default function CodingWorkspacePage() {
                         </span>
                         <div className="flex items-center gap-3 text-[10px] text-slate-500 font-bold uppercase">
                           <span>Runtime: {testResults.runtime}</span>
-                          <span>Memory: {testResults.memory}</span>
-                          <span>Passed: {testResults.casesPassed}/{testResults.casesTotal}</span>
+                          {testResults.casesTotal !== undefined && (
+                            <span>Passed: {testResults.casesPassed}/{testResults.casesTotal}</span>
+                          )}
                         </div>
                       </div>
 
@@ -519,10 +647,10 @@ export default function CodingWorkspacePage() {
                       {testResults.outputs && (
                         <div className="space-y-2">
                           {testResults.outputs.map((out: any, idx: number) => (
-                            <div key={idx} className="bg-slate-950 p-2 rounded-lg border border-slate-850 flex justify-between items-center">
+                            <div key={idx} className="bg-slate-950 p-2.5 rounded-lg border border-slate-850 flex justify-between items-center shadow-inner">
                               <div>
-                                <p className="text-[10px] text-slate-500">Case {idx+1}: {out.input}</p>
-                                <p className="text-[10px] text-slate-350 mt-1">Expected: {out.expected} | Got: {out.actual}</p>
+                                <p className="text-[10px] text-slate-500 font-bold">Case {idx+1}: {out.input}</p>
+                                <p className="text-[10px] text-slate-350 mt-1">Expected: {out.expected || 'N/A'} | Got: {out.actual}</p>
                               </div>
                               <Badge variant={out.passed ? 'success' : 'danger'}>
                                 {out.passed ? 'PASS' : 'FAIL'}
@@ -532,10 +660,10 @@ export default function CodingWorkspacePage() {
                         </div>
                       )}
 
-                      {testResults.failedCase && (
-                        <div className="bg-rose-500/5 border border-rose-500/10 p-3 rounded-lg text-rose-400">
-                          <p className="font-bold text-[10px] uppercase">Failed Assertion Case</p>
-                          <p className="mt-1 leading-normal text-xs">{testResults.failedCase}</p>
+                      {testResults.stderr && (
+                        <div className="bg-rose-500/5 border border-rose-500/10 p-3 rounded-lg text-rose-400 font-mono whitespace-pre-wrap">
+                          <p className="font-bold text-[10px] uppercase block mb-1">Execution stderr</p>
+                          <code className="text-[11px] leading-relaxed">{testResults.stderr}</code>
                         </div>
                       )}
                     </div>
@@ -569,95 +697,112 @@ export default function CodingWorkspacePage() {
         </Card>
       </div>
 
-      {/* COLUMN 3: AI Mentor Chat Assistant */}
-      <div className="flex-1 bg-slate-900/60 border border-slate-800 rounded-xl flex flex-col h-full overflow-hidden min-w-[280px]">
-        {/* Header Title */}
-        <div className="px-4 py-3 border-b border-slate-800 bg-slate-950/40 flex justify-between items-center">
-          <div className="flex items-center gap-1.5">
-            <BrainCircuit className="w-4 h-4 text-indigo-400" />
-            <span className="text-xs font-bold text-slate-200">AI Code Reviewer</span>
-          </div>
-          <Badge variant="primary" className="text-[9px]">ACTIVE CONTEXT</Badge>
-        </div>
+      {/* COLUMN 3: Slide-in AI Mentor Chat Assistant (using Framer Motion) */}
+      <AnimatePresence>
+        {workspaceAiOpen && (
+          <motion.div
+            initial={{ width: 0, opacity: 0 }}
+            animate={{ width: 340, opacity: 1 }}
+            exit={{ width: 0, opacity: 0 }}
+            transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+            className="bg-slate-900 border border-slate-800/80 rounded-xl flex flex-col h-full overflow-hidden shrink-0 z-10"
+          >
+            {/* Header Title */}
+            <div className="px-4 py-3 border-b border-slate-800/60 bg-slate-950/40 flex justify-between items-center shrink-0">
+              <div className="flex items-center gap-1.5">
+                <BrainCircuit className="w-4 h-4 text-indigo-400" />
+                <span className="text-xs font-bold text-slate-205">AI Code Reviewer</span>
+              </div>
+              <button 
+                onClick={() => setWorkspaceAiOpen(false)}
+                className="p-1 hover:bg-slate-800 rounded text-slate-450 hover:text-slate-200 cursor-pointer"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+            </div>
 
-        {/* Prompt shortcuts */}
-        <div className="p-3 border-b border-slate-800 bg-slate-950/20 grid grid-cols-2 gap-2 shrink-0">
-          <button
-            onClick={() => handleAICommand('explain')}
-            className="flex items-center gap-1.5 px-2.5 py-1.5 bg-slate-950 border border-slate-800 hover:border-slate-700 hover:text-slate-100 rounded-lg text-[10px] text-slate-350 font-semibold cursor-pointer justify-center transition-all duration-150 shadow-sm"
-          >
-            <HelpCircle className="w-3.5 h-3.5 text-slate-400" /> Explain Task
-          </button>
-          <button
-            onClick={() => handleAICommand('hint')}
-            className="flex items-center gap-1.5 px-2.5 py-1.5 bg-slate-950 border border-slate-800 hover:border-slate-700 hover:text-slate-100 rounded-lg text-[10px] text-slate-350 font-semibold cursor-pointer justify-center transition-all duration-150 shadow-sm"
-          >
-            <Lightbulb className="w-3.5 h-3.5 text-indigo-450" /> Give Hint
-          </button>
-          <button
-            onClick={() => handleAICommand('debug')}
-            className="flex items-center gap-1.5 px-2.5 py-1.5 bg-slate-950 border border-slate-800 hover:border-slate-700 hover:text-slate-100 rounded-lg text-[10px] text-slate-350 font-semibold cursor-pointer justify-center transition-all duration-150 shadow-sm"
-          >
-            <Bug className="w-3.5 h-3.5 text-rose-400" /> Debug Logic
-          </button>
-          <button
-            onClick={() => handleAICommand('optimize')}
-            className="flex items-center gap-1.5 px-2.5 py-1.5 bg-slate-950 border border-slate-800 hover:border-slate-700 hover:text-slate-100 rounded-lg text-[10px] text-slate-355 font-semibold cursor-pointer justify-center transition-all duration-150 shadow-sm"
-          >
-            <Cpu className="w-3.5 h-3.5 text-cyan-405" /> Optimize Space
-          </button>
-        </div>
+            {/* Prompt shortcuts */}
+            <div className="p-3 border-b border-slate-800/60 bg-slate-950/20 grid grid-cols-2 gap-2 shrink-0">
+              <button
+                onClick={() => handleAICommand('explain')}
+                className="flex items-center gap-1.5 px-2.5 py-1.5 bg-slate-950 border border-slate-800 hover:border-slate-700 hover:text-slate-100 rounded-lg text-[10px] text-slate-350 font-semibold cursor-pointer justify-center transition-all duration-150 shadow-sm"
+              >
+                <HelpCircle className="w-3.5 h-3.5 text-slate-400" /> Explain Task
+              </button>
+              <button
+                onClick={() => handleAICommand('hint')}
+                className="flex items-center gap-1.5 px-2.5 py-1.5 bg-slate-950 border border-slate-800 hover:border-slate-700 hover:text-slate-100 rounded-lg text-[10px] text-slate-350 font-semibold cursor-pointer justify-center transition-all duration-150 shadow-sm"
+              >
+                <Lightbulb className="w-3.5 h-3.5 text-indigo-450" /> Give Hint
+              </button>
+              <button
+                onClick={() => handleAICommand('debug')}
+                className="flex items-center gap-1.5 px-2.5 py-1.5 bg-slate-950 border border-slate-800 hover:border-slate-700 hover:text-slate-100 rounded-lg text-[10px] text-slate-350 font-semibold cursor-pointer justify-center transition-all duration-150 shadow-sm"
+              >
+                <Bug className="w-3.5 h-3.5 text-rose-450" /> Debug Logic
+              </button>
+              <button
+                onClick={() => handleAICommand('optimize')}
+                className="flex items-center gap-1.5 px-2.5 py-1.5 bg-slate-950 border border-slate-800 hover:border-slate-700 hover:text-slate-100 rounded-lg text-[10px] text-slate-355 font-semibold cursor-pointer justify-center transition-all duration-150 shadow-sm"
+              >
+                <Cpu className="w-3.5 h-3.5 text-cyan-405" /> Optimize Space
+              </button>
+            </div>
 
-        {/* Conversational Stream */}
-        <div className="flex-1 overflow-y-auto p-4 space-y-3.5">
-          {aiMentorMessages.map((msg, idx) => (
-            <div key={idx} className={`flex gap-2.5 ${msg.role === 'assistant' ? 'justify-start' : 'justify-end'}`}>
-              {msg.role === 'assistant' && (
-                <div className="w-6 h-6 rounded bg-indigo-650 flex items-center justify-center text-white shrink-0 text-[10px] shadow-sm">
-                  <Sparkles className="w-3.5 h-3.5" />
+            {/* Conversational Stream */}
+            <div className="flex-1 overflow-y-auto p-4 space-y-3.5">
+              {aiMentorMessages.map((msg, idx) => (
+                <div key={idx} className={`flex gap-2.5 ${msg.role === 'assistant' ? 'justify-start' : 'justify-end'}`}>
+                  {msg.role === 'assistant' && (
+                    <div className="w-6 h-6 rounded bg-indigo-650 flex items-center justify-center text-white shrink-0 text-[10px] shadow-sm">
+                      <Sparkles className="w-3.5 h-3.5" />
+                    </div>
+                  )}
+                  <div className={`max-w-[85%] rounded-xl p-3 text-xs leading-relaxed font-semibold whitespace-pre-wrap shadow-xs
+                    ${msg.role === 'assistant' 
+                      ? 'bg-slate-950 border border-slate-850 text-slate-300' 
+                      : 'bg-indigo-600 text-white'}`}
+                  >
+                    {msg.text}
+                  </div>
+                </div>
+              ))}
+
+              {aiIsTyping && (
+                <div className="flex gap-2.5 justify-start items-center">
+                  <div className="w-6 h-6 rounded bg-indigo-650 flex items-center justify-center text-white shrink-0 text-[10px] animate-pulse">
+                    <Sparkles className="w-3.5 h-3.5" />
+                  </div>
+                  <div className="bg-slate-950 border border-slate-850 rounded-lg px-3 py-1.5 text-[10px] text-slate-500 font-bold uppercase tracking-wider animate-pulse">
+                    Analyzing code buffers...
+                  </div>
                 </div>
               )}
-              <div className={`max-w-[85%] rounded-xl p-3 text-xs leading-relaxed font-semibold whitespace-pre-wrap shadow-xs
-                ${msg.role === 'assistant' 
-                  ? 'bg-slate-950 border border-slate-850 text-slate-300' 
-                  : 'bg-indigo-600 text-white'}`}
-              >
-                {msg.text}
-              </div>
             </div>
-          ))}
 
-          {aiIsTyping && (
-            <div className="flex gap-2.5 justify-start items-center">
-              <div className="w-6 h-6 rounded bg-indigo-600 flex items-center justify-center text-white shrink-0 text-[10px] animate-pulse">
-                AI
-              </div>
-              <div className="bg-slate-950 border border-slate-850 rounded-lg px-3 py-1.5 text-[10px] text-slate-500 font-bold uppercase tracking-wider animate-pulse">
-                Analyzing complementary indices...
-              </div>
+            {/* Text Area Input */}
+            <div className="p-3 border-t border-slate-850 bg-slate-950/40 shrink-0">
+              <form onSubmit={handleSendAIChat} className="flex gap-2">
+                <input
+                  type="text"
+                  placeholder="Ask mentor..."
+                  className="flex-1 bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-150 placeholder-slate-500 focus:outline-none focus:border-indigo-500 shadow-sm"
+                  value={aiInputValue}
+                  onChange={(e) => setAiInputValue(e.target.value)}
+                  disabled={aiIsTyping}
+                />
+                <button
+                  type="submit"
+                  className="px-3 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold rounded-lg shadow-sm border border-indigo-700 active:scale-[0.98] transition-all cursor-pointer"
+                  disabled={aiIsTyping}
+                >
+                  Ask
+                </button>
+              </form>
             </div>
-          )}
-        </div>
-
-        {/* Text Area Input */}
-        <div className="p-3 border-t border-slate-850 bg-slate-950/40">
-          <form onSubmit={handleSendAIChat} className="flex gap-2">
-            <input
-              type="text"
-              placeholder="Ask mentor..."
-              className="flex-1 bg-slate-950 border border-slate-800 rounded-lg px-3.5 py-2 text-xs text-slate-150 placeholder-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all duration-150 shadow-sm"
-              value={aiInputValue}
-              onChange={(e) => setAiInputValue(e.target.value)}
-            />
-            <button
-              type="submit"
-              className="px-3.5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold rounded-lg shadow-sm border border-indigo-700 active:scale-[0.98] transition-all cursor-pointer"
-            >
-              Ask
-            </button>
-          </form>
-        </div>
-      </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
     </div>
   );

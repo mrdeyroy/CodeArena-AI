@@ -4,6 +4,15 @@ import { Problem, ProblemStatus, Difficulty, SkillNode, SkillEdge } from './type
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 const DEFAULT_USER_ID = '00000000-0000-0000-0000-000000000000';
 
+async function getCurrentUserId(): Promise<string> {
+  try {
+    const { data: { session } } = await supabase.auth.getSession();
+    return session?.user?.id || DEFAULT_USER_ID;
+  } catch (e) {
+    return DEFAULT_USER_ID;
+  }
+}
+
 async function getHeaders() {
   const { data: { session } } = await supabase.auth.getSession();
   const token = session?.access_token || 'mock-token';
@@ -110,7 +119,8 @@ export async function fetchGraph(): Promise<{ nodes: SkillNode[]; edges: SkillEd
   // Load analytics to fill mastery/status dynamically
   let skillsAnalytics: any[] = [];
   try {
-    const analyticsRes = await fetch(`${BASE_URL}/analytics/skills?user_id=${DEFAULT_USER_ID}`, {
+    const userId = await getCurrentUserId();
+    const analyticsRes = await fetch(`${BASE_URL}/analytics/skills?user_id=${userId}`, {
       headers: await getHeaders(),
     });
     if (analyticsRes.ok) {
@@ -119,6 +129,14 @@ export async function fetchGraph(): Promise<{ nodes: SkillNode[]; edges: SkillEd
     }
   } catch (e) {
     console.error('Failed to load skill analytics:', e);
+  }
+
+  // Load all problems to calculate count dynamically
+  let allProblems: Problem[] = [];
+  try {
+    allProblems = await fetchProblems();
+  } catch (e) {
+    console.error('Failed to fetch problems for graph aggregation:', e);
   }
 
   const nodes = (data.nodes || []).map((node: any) => {
@@ -130,13 +148,23 @@ export async function fetchGraph(): Promise<{ nodes: SkillNode[]; edges: SkillEd
     else if (masteryVal >= 50) statusVal = 'learning';
     else if (masteryVal > 0) statusVal = 'weak';
 
+    // Map problems to this node
+    const nodeProblems = allProblems.filter((p) =>
+      p.topics.some((topic) =>
+        topic.toLowerCase().includes(node.name.toLowerCase()) ||
+        node.name.toLowerCase().includes(topic.toLowerCase())
+      )
+    );
+    const problemsCount = nodeProblems.length || 10;
+    const solvedProblems = nodeProblems.filter((p) => p.status === 'Solved').length;
+
     return {
       id: node.id,
       label: node.name,
       status: statusVal,
       mastery: masteryVal,
-      problemsCount: 20, // default placeholder
-      problemsSolved: masteryVal >= 80 ? 15 : (masteryVal >= 50 ? 8 : (masteryVal > 0 ? 3 : 0)),
+      problemsCount,
+      problemsSolved: solvedProblems || (masteryVal >= 80 ? Math.round(problemsCount * 0.8) : (masteryVal >= 50 ? Math.round(problemsCount * 0.4) : 0)),
       lastActivity: new Date().toISOString(),
       description: node.description || '',
       recommendedProblems: [],
@@ -154,7 +182,8 @@ export async function fetchGraph(): Promise<{ nodes: SkillNode[]; edges: SkillEd
 }
 
 export async function fetchNodeInsights(nodeId: string) {
-  const res = await fetch(`${BASE_URL}/graph/nodes/${nodeId}/insights?user_id=${DEFAULT_USER_ID}`, {
+  const userId = await getCurrentUserId();
+  const res = await fetch(`${BASE_URL}/graph/nodes/${nodeId}/insights?user_id=${userId}`, {
     headers: await getHeaders(),
   });
   if (!res.ok) throw new Error('Failed to fetch node insights');
@@ -209,7 +238,8 @@ export async function finalizeInterview(sessionId: string) {
 }
 
 export async function fetchAnalyticsOverview() {
-  const res = await fetch(`${BASE_URL}/analytics/overview?user_id=${DEFAULT_USER_ID}`, {
+  const userId = await getCurrentUserId();
+  const res = await fetch(`${BASE_URL}/analytics/overview?user_id=${userId}`, {
     headers: await getHeaders(),
   });
   if (!res.ok) throw new Error('Failed to fetch analytics overview');
@@ -217,11 +247,22 @@ export async function fetchAnalyticsOverview() {
 }
 
 export async function fetchAnalyticsProgress() {
-  const res = await fetch(`${BASE_URL}/analytics/progress?user_id=${DEFAULT_USER_ID}`, {
+  const userId = await getCurrentUserId();
+  const res = await fetch(`${BASE_URL}/analytics/progress?user_id=${userId}`, {
     headers: await getHeaders(),
   });
   if (!res.ok) throw new Error('Failed to fetch progress');
   return res.json();
+}
+
+export async function fetchSkillAnalytics(): Promise<any[]> {
+  const userId = await getCurrentUserId();
+  const res = await fetch(`${BASE_URL}/analytics/skills?user_id=${userId}`, {
+    headers: await getHeaders(),
+  });
+  if (!res.ok) throw new Error('Failed to fetch skill analytics');
+  const data = await res.json();
+  return data.skills || [];
 }
 
 // ── Submission Status ──────────────────────────────────────────
@@ -253,4 +294,13 @@ export async function updateSubmissionStatus(problemId: string, status: string):
     headers: await getHeaders(),
   });
   if (!res.ok) throw new Error('Failed to update submission status');
+}
+
+export async function fetchRecentSubmissions(limit: number = 10): Promise<any[]> {
+  const res = await fetch(`${BASE_URL}/submissions/recent?limit=${limit}`, {
+    headers: await getHeaders(),
+  });
+  if (!res.ok) throw new Error('Failed to fetch recent submissions');
+  const data = await res.json();
+  return data.submissions || [];
 }

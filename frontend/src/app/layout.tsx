@@ -24,7 +24,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="h-full dark select-none">
+    <html lang="en" className="h-full dark select-none" suppressHydrationWarning>
       <body className={`${geistSans.variable} ${geistMono.variable} h-full bg-slate-950 text-slate-100 antialiased overflow-x-hidden`}>
         <Providers>{children}</Providers>
       </body>

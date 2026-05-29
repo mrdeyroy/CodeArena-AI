@@ -59,7 +59,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         updateUser({
           name: user.user_metadata?.full_name || user.user_metadata?.name || user.email?.split('@')[0] || "CodeArena User",
           email: user.email || "",
-          avatar: user.user_metadata?.avatar_url || "",
+          avatar: user.user_metadata?.avatar_url || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=256&h=256&q=80",
         });
       } else {
         logout(); // set isLoggedIn = false in Zustand

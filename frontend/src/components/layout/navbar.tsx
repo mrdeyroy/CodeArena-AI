@@ -140,7 +140,7 @@ export const Navbar = () => {
               className="flex items-center gap-2 p-1.5 hover:bg-slate-900 rounded-lg transition-colors cursor-pointer"
             >
               <img
-                src={user.avatar}
+                src={user.avatar || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=256&h=256&q=80"}
                 alt={user.name}
                 className="w-7 h-7 rounded-md object-cover ring-1 ring-slate-800"
               />

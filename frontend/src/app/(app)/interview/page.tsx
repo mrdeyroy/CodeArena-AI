@@ -362,7 +362,7 @@ export default function MockInterviewPage() {
             {/* Radar chart wrapper */}
             <div className="h-64 flex flex-col justify-center">
               <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2">Performance Dimensions</p>
-              <ResponsiveContainer width="100%" height="90%">
+              <ResponsiveContainer width="100%" height="90%" minWidth={0} minHeight={0}>
                 <RadarChart cx="50%" cy="50%" outerRadius="75%" data={reportRadarData}>
                   <PolarGrid stroke="#334155" />
                   <PolarAngleAxis dataKey="metric" stroke="#94a3b8" fontSize={9} />

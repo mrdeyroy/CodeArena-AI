@@ -31,6 +31,7 @@ export const VoiceInterviewRoom = () => {
 
   const [activeSession, setActiveSession] = React.useState(false);
   const [hybridTypeInput, setHybridTypeInput] = React.useState(false);
+  const [textResponse, setTextResponse] = React.useState('');
 
   const handleStartSession = () => {
     store.setHybridMode(hybridTypeInput);
@@ -265,6 +266,41 @@ export const VoiceInterviewRoom = () => {
                       >
                         &ldquo;{speechText}&rdquo;
                       </motion.div>
+                    )}
+
+                    {/* Text Fallback Input */}
+                    {currentQuestion && (
+                      <div className="mt-6 w-full max-w-xl flex flex-col gap-2 relative z-10">
+                        <div className="flex gap-2">
+                          <textarea
+                            placeholder="Type your response here if speech recognition fails or if you prefer typing..."
+                            value={textResponse}
+                            onChange={(e) => setTextResponse(e.target.value)}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter' && !e.shiftKey) {
+                                e.preventDefault();
+                                if (textResponse.trim()) {
+                                  submitManualText(textResponse);
+                                  setTextResponse('');
+                                }
+                              }
+                            }}
+                            className="w-full h-20 p-3 bg-slate-950/85 border border-slate-850 rounded-xl text-xs font-semibold text-slate-300 focus:ring-1 focus:ring-indigo-500 focus:outline-none placeholder:text-slate-650 resize-none font-sans"
+                          />
+                          <button
+                            onClick={() => {
+                              if (textResponse.trim()) {
+                                submitManualText(textResponse);
+                                setTextResponse('');
+                              }
+                            }}
+                            disabled={!textResponse.trim()}
+                            className="py-2 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white font-bold text-xs uppercase transition-all shrink-0 flex items-center justify-center cursor-pointer"
+                          >
+                            Submit
+                          </button>
+                        </div>
+                      </div>
                     )}
                   </div>
 

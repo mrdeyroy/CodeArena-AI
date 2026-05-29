@@ -104,7 +104,7 @@ export const Sidebar = () => {
           className="flex items-center gap-3 p-2 rounded-xl hover:bg-slate-800/50 transition-colors"
         >
           <img
-            src={user.avatar}
+            src={user.avatar || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=256&h=256&q=80"}
             alt={user.name}
             className="w-9 h-9 rounded-lg object-cover ring-2 ring-indigo-500/20"
           />

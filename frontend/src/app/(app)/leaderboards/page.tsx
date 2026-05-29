@@ -89,7 +89,7 @@ export default function LeaderboardsPage() {
                     {entry.rank === 1 ? '🥇' : entry.rank === 2 ? '🥈' : `#${entry.rank}`}
                   </td>
                   <td className="py-3 px-4 flex items-center gap-3">
-                    <img src={entry.user.avatar} alt={entry.user.name} className="w-8 h-8 rounded-lg object-cover" />
+                    <img src={entry.user.avatar || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=256&h=256&q=80"} alt={entry.user.name} className="w-8 h-8 rounded-lg object-cover" />
                     <div>
                       <p className="font-bold text-slate-200">{entry.user.name}</p>
                       <p className="text-[10px] text-slate-550 font-semibold truncate max-w-[150px]">

@@ -28,7 +28,7 @@ export default function ProfilePage() {
         
         {/* Info */}
         <div className="flex flex-col md:flex-row items-center gap-5 z-10 text-center md:text-left">
-          <img src={user.avatar} alt={user.name} className="w-20 h-20 rounded-2xl object-cover ring-4 ring-indigo-500/20" />
+          <img src={user.avatar || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=256&h=256&q=80"} alt={user.name} className="w-20 h-20 rounded-2xl object-cover ring-4 ring-indigo-500/20" />
           <div className="space-y-2">
             <h1 className="text-xl font-extrabold text-slate-100">{user.name}</h1>
             <p className="text-xs font-semibold text-slate-400">@{user.username}</p>
